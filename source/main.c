@@ -15,58 +15,69 @@ void kernelMenu()
 	u32 nnidNum = 0xFFFFFFFF;
 	s32 ret;
 	
-	sftd_draw_textf(font, ((400 - sftd_get_text_width(font, 12, "Kernel Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Kernel Menu");
+	sftd_draw_textf(font_m, ((400 - sftd_get_text_width(font_m, 12, "Kernel Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Kernel Menu");
 
-	sftd_draw_textf(font, 20, 120, RGBA8(77, 76, 74, 255), 12, "%s", kernerlVersion);
-	sftd_draw_textf(font, 20, 136, RGBA8(77, 76, 74, 255), 12, "%s", firmVersion);
+	sftd_draw_textf(font_r, 20, 120, RGBA8(77, 76, 74, 255), 12, "%s", kernerlVersion);
+	sftd_draw_textf(font_r, 20, 136, RGBA8(77, 76, 74, 255), 12, "%s", firmVersion);
 	
-	sftd_draw_textf(font, 20, 152, RGBA8(77, 76, 74, 255), 12, "%s", systemVersion);
+	sftd_draw_textf(font_r, 20, 152, RGBA8(77, 76, 74, 255), 12, "%s", systemVersion);
 	
-	sftd_draw_textf(font, 20, 168, RGBA8(77, 76, 74, 255), 12, "SDMC CID: %s", sdmcCID);
+	sftd_draw_textf(font_r, 20, 168, RGBA8(77, 76, 74, 255), 12, "SDMC CID: %s", sdmcCID);
 
-	sftd_draw_textf(font, 20, 184, RGBA8(77, 76, 74, 255), 12, "NAND CID: %s", nandCID);
+	sftd_draw_textf(font_r, 20, 184, RGBA8(77, 76, 74, 255), 12, "NAND CID: %s", nandCID);
 			
 	ret = ACTU_Initialize(0xB0002C8, 0, 0);
 	ret = ACTU_GetAccountDataBlock(0xFE, 4, 12, &nnidNum);
 	if ((nnidNum != 0xFFFFFFFF))
-		sftd_draw_textf(font, 20, 200, RGBA8(77, 76, 74, 255), 12, "NNID: %s (%d)", (char*)getNNID(), (int) nnidNum);
+		sftd_draw_textf(font_r, 20, 200, RGBA8(77, 76, 74, 255), 12, "NNID: %s (%d)", (char*)getNNID(), (int) nnidNum);
 	else if (ret)
-		sftd_draw_textf(font, 20, 200, RGBA8(77, 76, 74, 255), 12, "NNID: %s", (char*)getNNID());
+		sftd_draw_textf(font_r, 20, 200, RGBA8(77, 76, 74, 255), 12, "NNID: %s", (char*)getNNID());
 	
-	sftd_draw_textf(font, 20, 216, RGBA8(77, 76, 74, 255), 12, "Device ID: %lu", getDeviceId());
+	sftd_draw_textf(font_r, 20, 216, RGBA8(77, 76, 74, 255), 12, "Device ID: %lu", getDeviceId());
 }
 
 void systemMenu()
 {
-	sftd_draw_textf(font, ((400 - sftd_get_text_width(font, 12, "System Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "System Menu");
+	sftd_draw_textf(font_m, ((400 - sftd_get_text_width(font_m, 12, "System Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "System Menu");
 	
-	sftd_draw_textf(font, 20, 120, RGBA8(77, 76, 74, 255), 12, "Model: %s (%s)", getModel(), getRegion());
-	sftd_draw_textf(font, 20, 136, RGBA8(77, 76, 74, 255), 12, "Language: %s", getLang());
-	sftd_draw_textf(font, 20, 152, RGBA8(77, 76, 74, 255), 12, "ECS Device ID: %llu", getSoapId());
-	sftd_draw_textf(font, 20, 168, RGBA8(77, 76, 74, 255), 12, "Local friend code seed: %010llX", getLocalFriendCodeSeed());
-	sftd_draw_textf(font, 20, 184, RGBA8(77, 76, 74, 255), 12, "MAC Address: %s", getMacAddress());
-	sftd_draw_textf(font, 20, 200, RGBA8(77, 76, 74, 255), 12, "Serial number: %s", getSerialNum());
-	sftd_draw_textf(font, 20, 216, RGBA8(77, 76, 74, 255), 12, "Screen type: %s", getScreenType());
+	sftd_draw_textf(font_r, 20, 120, RGBA8(77, 76, 74, 255), 12, "Model: %s (%s)", getModel(), getRegion());
+	sftd_draw_textf(font_r, 20, 136, RGBA8(77, 76, 74, 255), 12, "Language: %s", getLang());
+	sftd_draw_textf(font_r, 20, 152, RGBA8(77, 76, 74, 255), 12, "ECS Device ID: %llu", getSoapId());
+	sftd_draw_textf(font_r, 20, 168, RGBA8(77, 76, 74, 255), 12, "Local friend code seed: %010llX", getLocalFriendCodeSeed());
+	sftd_draw_textf(font_r, 20, 184, RGBA8(77, 76, 74, 255), 12, "MAC Address: %s", getMacAddress());
+	sftd_draw_textf(font_r, 20, 200, RGBA8(77, 76, 74, 255), 12, "Serial number: %s", getSerialNum());
+	sftd_draw_textf(font_r, 20, 216, RGBA8(77, 76, 74, 255), 12, "Screen type: %s", getScreenType());
 }
 
 void batteryMenu()
 {
 	u8 batteryPercent, batteryVolt, mcuFwMajor, mcuFwMinor;
 	
-	sftd_draw_textf(font, ((400 - sftd_get_text_width(font, 12, "Battery Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Battery Menu");
+	sftd_draw_textf(font_m, ((400 - sftd_get_text_width(font_m, 12, "Battery Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Battery Menu");
 	
 	mcuGetBatteryLevel(&batteryPercent);
 	mcuGetBatteryVoltage(&batteryVolt);
 	
-	sftd_draw_textf(font, 20, 120, RGBA8(77, 76, 74, 255), 12, "Battery percentage: %3d%%", batteryPercent);
-	sftd_draw_textf(font, 20, 136, RGBA8(77, 76, 74, 255), 12, "Battery status: %s", batteryStatus());
-	sftd_draw_textf(font, 20, 152, RGBA8(77, 76, 74, 255), 12, "Battery voltage: %d", batteryVolt);
+	sftd_draw_textf(font_r, 20, 120, RGBA8(77, 76, 74, 255), 12, "Battery percentage: %3d%%", batteryPercent);
+	sftd_draw_textf(font_r, 20, 136, RGBA8(77, 76, 74, 255), 12, "Battery status: %s", batteryStatus());
+	sftd_draw_textf(font_r, 20, 152, RGBA8(77, 76, 74, 255), 12, "Battery voltage: %d", batteryVolt);
 	
 	GetMcuFwVerHigh(&mcuFwMajor);
 	GetMcuFwVerLow(&mcuFwMinor);
 	
 	//if (CFG_UNITINFO == 0)
-	sftd_draw_textf(font, 20, 168, RGBA8(77, 76, 74, 255), 12, "MCU firmware: %u.%u", (mcuFwMajor - 16), mcuFwMinor);
+	sftd_draw_textf(font_r, 20, 168, RGBA8(77, 76, 74, 255), 12, "MCU firmware: %u.%u", (mcuFwMajor - 16), mcuFwMinor);
+}
+
+void configInfoMenu()
+{	
+	sftd_draw_textf(font_m, ((400 - sftd_get_text_width(font_m, 12, "Config Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Config Menu");
+	
+	sftd_draw_textf(font_r, 20, 120, RGBA8(77, 76, 74, 255), 12, "Username: %s", username);
+	
+	sftd_draw_textf(font_r, 20, 136, RGBA8(77, 76, 74, 255), 12, "Birthday: %s", birthday);
+	
+	sftd_draw_textf(font_r, 20, 152, RGBA8(77, 76, 74, 255), 12, "EULA version: %s", getEulaVersion());
 }
 
 void miscMenu()
@@ -79,22 +90,22 @@ void miscMenu()
 	
 	double wifiPercent = (osGetWifiStrength() * 33.3333333333);
 	
-	sftd_draw_textf(font, ((400 - sftd_get_text_width(font, 12, "Miscelleanous")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Miscelleanous");
+	sftd_draw_textf(font_m, ((400 - sftd_get_text_width(font_m, 12, "Miscelleanous")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Miscelleanous");
 	
 	FSUSER_GetArchiveResource(&resource, SYSTEM_MEDIATYPE_SD);
 	getSizeString(sdFreeSize, (((u64) resource.freeClusters * (u64) resource.clusterSize)));
 	getSizeString(sdTotalSize, (((u64) resource.totalClusters * (u64) resource.clusterSize)));
-	sftd_draw_textf(font, 20, 120, RGBA8(77, 76, 74, 255), 12, "SD Size: %s / %s", sdFreeSize, sdTotalSize);
+	sftd_draw_textf(font_r, 20, 120, RGBA8(77, 76, 74, 255), 12, "SD Size: %s / %s", sdFreeSize, sdTotalSize);
 	
 	FSUSER_GetArchiveResource(&resource, SYSTEM_MEDIATYPE_CTR_NAND);
 	getSizeString(ctrFreeSize, (((u64) resource.freeClusters * (u64) resource.clusterSize)));
 	getSizeString(ctrTotalSize, (((u64) resource.totalClusters * (u64) resource.clusterSize)));
-	sftd_draw_textf(font, 20, 136, RGBA8(77, 76, 74, 255), 12, "CTR Size: %s / %s", ctrFreeSize, ctrTotalSize);
+	sftd_draw_textf(font_r, 20, 136, RGBA8(77, 76, 74, 255), 12, "CTR Size: %s / %s", ctrFreeSize, ctrTotalSize);
 				
-	sftd_draw_textf(font, 20, 152, RGBA8(77, 76, 74, 255), 12, "Installed titles: %i", (int)installedTitles);
-	sftd_draw_textf(font, 20, 168, RGBA8(77, 76, 74, 255), 12, "WiFi signal strength: %d (%.0lf%%)", osGetWifiStrength(), wifiPercent);
+	sftd_draw_textf(font_r, 20, 152, RGBA8(77, 76, 74, 255), 12, "Installed titles: %i", (int)installedTitles);
+	sftd_draw_textf(font_r, 20, 168, RGBA8(77, 76, 74, 255), 12, "WiFi signal strength: %d (%.0lf%%)", osGetWifiStrength(), wifiPercent);
 	
-	sftd_draw_textf(font, 20, 184, RGBA8(77, 76, 74, 255), 12, "Debug mode: %s", isDebugModeEnabled());
+	sftd_draw_textf(font_r, 20, 184, RGBA8(77, 76, 74, 255), 12, "Debug mode: %s", isDebugModeEnabled());
 }
 
 void hardwareMenu()
@@ -102,35 +113,24 @@ void hardwareMenu()
 	bool hpInserted = false, csInserted = false;
 	u8 volume;
 	
-	sftd_draw_textf(font, ((400 - sftd_get_text_width(font, 12, "Hardware")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Hardware");
+	sftd_draw_textf(font_m, ((400 - sftd_get_text_width(font_m, 12, "Hardware")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Hardware");
 	
 	DSP_GetHeadphoneStatus(&hpInserted);
-	sftd_draw_textf(font, 20, 120, RGBA8(77, 76, 74, 255), 12, "Headphone status: %s", hpInserted? "inserted" : "not inserted");
+	sftd_draw_textf(font_r, 20, 120, RGBA8(77, 76, 74, 255), 12, "Headphone status: %s", hpInserted? "inserted" : "not inserted");
 	
 	FSUSER_CardSlotIsInserted(&csInserted);
-	sftd_draw_textf(font, 20, 136, RGBA8(77, 76, 74, 255), 12, "Card slot status: %s", csInserted? "inserted" : "not inserted");
+	sftd_draw_textf(font_r, 20, 136, RGBA8(77, 76, 74, 255), 12, "Card slot status: %s", csInserted? "inserted" : "not inserted");
 	
-	sftd_draw_textf(font, 20, 152, RGBA8(77, 76, 74, 255), 12, "SDMC status: %s", detectSD()? "detected" : "not detected");
+	sftd_draw_textf(font_r, 20, 152, RGBA8(77, 76, 74, 255), 12, "SDMC status: %s", detectSD()? "detected" : "not detected");
 	
 	HIDUSER_GetSoundVolume(&volume);
 	double volPercent = (volume * 1.5873015873);
-	sftd_draw_textf(font, 20, 168, RGBA8(77, 76, 74, 255), 12, "Volume slider state: %d (%.0lf%%)", volume, volPercent);
+	sftd_draw_textf(font_r, 20, 168, RGBA8(77, 76, 74, 255), 12, "Volume slider state: %d (%.0lf%%)", volume, volPercent);
 	
 	double _3dSliderPercent = (osGet3DSliderState() * 100.0);
-	sftd_draw_textf(font, 20, 184, RGBA8(77, 76, 74, 255), 12, "3D slider state: %.1lf (%.0lf%%)", osGet3DSliderState(), _3dSliderPercent);
+	sftd_draw_textf(font_r, 20, 184, RGBA8(77, 76, 74, 255), 12, "3D slider state: %.1lf (%.0lf%%)", osGet3DSliderState(), _3dSliderPercent);
 
-	sftd_draw_textf(font, 20, 200, RGBA8(77, 76, 74, 255), 12, "Brightness: %s", getBrightness(1));
-}
-
-void configInfoMenu()
-{	
-	sftd_draw_textf(font, ((400 - sftd_get_text_width(font, 12, "Config Info")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Config Info");
-	
-	sftd_draw_textf(font, 20, 120, RGBA8(77, 76, 74, 255), 12, "Username: %s", username);
-	
-	sftd_draw_textf(font, 20, 136, RGBA8(77, 76, 74, 255), 12, "Birthday: %s", birthday);
-	
-	sftd_draw_textf(font, 20, 152, RGBA8(77, 76, 74, 255), 12, "EULA version: %s", getEulaVersion());
+	sftd_draw_textf(font_r, 20, 200, RGBA8(77, 76, 74, 255), 12, "Brightness: %s", getBrightness(1));
 }
 
 void initServices()
@@ -161,7 +161,8 @@ void initServices()
 	bottomScreen = sfil_load_PNG_file("romfs:/res/bottomScreen.png", SF2D_PLACE_RAM); setBilinearFilter(bottomScreen);
 	logo = sfil_load_PNG_file("romfs:/res/icon.png", SF2D_PLACE_RAM); setBilinearFilter(logo);
 	
-	font = sftd_load_font_mem(Ubuntu_ttf, Ubuntu_ttf_size);
+	font_m = sftd_load_font_mem(UbuntuMedium_ttf, UbuntuMedium_ttf_size);
+	font_r = sftd_load_font_mem(UbuntuRegular_ttf, UbuntuRegular_ttf_size);
 	
 	if (isN3DS())
 		osSetSpeedupEnable(true);
@@ -177,6 +178,15 @@ void initServices()
 
 void termServices()
 {
+	osSetSpeedupEnable(0);
+	
+	/*sftd_free_font(font_r);
+	sftd_free_font(font_m);
+	
+	sf2d_free_texture(logo);
+	sf2d_free_texture(bottomScreen);
+	sf2d_free_texture(topScreen);*/
+	
 	romfsExit();
 	sftd_fini();
 	sf2d_fini();
@@ -217,8 +227,10 @@ int	touchButton(touchPosition *touch, int MenuSelection)
 	return (MenuSelection);
 }
 
-void mainMenu()
-{
+int main(int argc, char *argv[])
+{      
+	initServices();
+	
 	int MenuSelection = 1; // Pretty obvious
 	int selector_x = 16; //The x position of the first selection
 	int selector_y = 17; //The y position of the first selection
@@ -244,39 +256,39 @@ void mainMenu()
 		sf2d_draw_rectangle(selector_image_x, selector_image_y, 286, 18, RGBA8(242, 119, 62, 255));
 		
 		if (MenuSelection == 1)
-			sftd_draw_textf(font, 22, 37, RGBA8(250, 237, 227, 255), 12, "Kernel Information");
+			sftd_draw_textf(font_m, 22, 37, RGBA8(250, 237, 227, 255), 12, "Kernel Information");
 		else 
-			sftd_draw_textf(font, 22, 37, RGBA8(78, 74, 67, 255), 12, "Kernel Information");
+			sftd_draw_textf(font_m, 22, 37, RGBA8(78, 74, 67, 255), 12, "Kernel Information");
 		
 		if (MenuSelection == 2)
-			sftd_draw_textf(font, 22, 55, RGBA8(250, 237, 227, 255), 12, "System Information");
+			sftd_draw_textf(font_m, 22, 55, RGBA8(250, 237, 227, 255), 12, "System Information");
 		else
-			sftd_draw_textf(font, 22, 55, RGBA8(78, 74, 67, 255), 12, "System Information");
+			sftd_draw_textf(font_m, 22, 55, RGBA8(78, 74, 67, 255), 12, "System Information");
 		
 		if (MenuSelection == 3)
-			sftd_draw_textf(font, 22, 73, RGBA8(250, 237, 227, 255), 12, "Battery Information");
+			sftd_draw_textf(font_m, 22, 73, RGBA8(250, 237, 227, 255), 12, "Battery Information");
 		else
-			sftd_draw_textf(font, 22, 73, RGBA8(78, 74, 67, 255), 12, "Battery Information");
+			sftd_draw_textf(font_m, 22, 73, RGBA8(78, 74, 67, 255), 12, "Battery Information");
 		
 		if (MenuSelection == 4)
-			sftd_draw_textf(font, 22, 91, RGBA8(250, 237, 227, 255), 12, "Miscelleanous");
+			sftd_draw_textf(font_m, 22, 91, RGBA8(250, 237, 227, 255), 12, "Config Information");
 		else
-			sftd_draw_textf(font, 22, 91, RGBA8(78, 74, 67, 255), 12, "Miscelleanous");
+			sftd_draw_textf(font_m, 22, 91, RGBA8(78, 74, 67, 255), 12, "Config Information");
 		
 		if (MenuSelection == 5)
-			sftd_draw_textf(font, 22, 109, RGBA8(250, 237, 227, 255), 12, "Hardware");
+			sftd_draw_textf(font_m, 22, 109, RGBA8(250, 237, 227, 255), 12, "Miscelleanous");
 		else
-			sftd_draw_textf(font, 22, 109, RGBA8(78, 74, 67, 255), 12, "Hardware");
+			sftd_draw_textf(font_m, 22, 109, RGBA8(78, 74, 67, 255), 12, "Miscelleanous");
 		
 		if (MenuSelection == 6)
-			sftd_draw_textf(font, 22, 127, RGBA8(250, 237, 227, 255), 12, "Config Info");
+			sftd_draw_textf(font_m, 22, 127, RGBA8(250, 237, 227, 255), 12, "Hardware");
 		else
-			sftd_draw_textf(font, 22, 127, RGBA8(78, 74, 67, 255), 12, "Config Info");
+			sftd_draw_textf(font_m, 22, 127, RGBA8(78, 74, 67, 255), 12, "Hardware");
 		
 		if (MenuSelection == 7)
-			sftd_draw_textf(font, 22, 145, RGBA8(250, 237, 227, 255), 12, "Exit");
+			sftd_draw_textf(font_m, 22, 145, RGBA8(250, 237, 227, 255), 12, "Exit");
 		else
-			sftd_draw_textf(font, 22, 145, RGBA8(78, 74, 67, 255), 12, "Exit");
+			sftd_draw_textf(font_m, 22, 145, RGBA8(78, 74, 67, 255), 12, "Exit");
 		
 		//Added delay to prevent text from appearing 'glitchy' as you scroll past each section.
 		if (kDown & KEY_DOWN)
@@ -303,7 +315,7 @@ void mainMenu()
 		sf2d_draw_texture(topScreen, 0, 0);
 		sf2d_draw_texture(logo, 180, 36);
 		
-		sftd_draw_textf(font, 5, 1, RGBA8(250, 237, 227, 255), 12, "3DSident v0.7.5");
+		sftd_draw_textf(font_m, 5, 1, RGBA8(250, 237, 227, 255), 12, "3DSident v0.7.5");
 		
 		if (MenuSelection == 1)
 			kernelMenu();
@@ -312,11 +324,11 @@ void mainMenu()
 		else if (MenuSelection == 3)
 			batteryMenu();
 		else if (MenuSelection == 4)
-			miscMenu();
-		else if (MenuSelection == 5)
-			hardwareMenu();
-		else if (MenuSelection == 6)
 			configInfoMenu();
+		else if (MenuSelection == 5)
+			miscMenu();
+		else if (MenuSelection == 6)
+			hardwareMenu();
 		else if ((MenuSelection == 7) && ((kDown & KEY_A) || (kDown & KEY_TOUCH)))
 		{
 			termServices();
@@ -328,13 +340,6 @@ void mainMenu()
 		
 		endDrawing();
 	}
-}
-
-int main(int argc, char *argv[])
-{      
-	initServices();
-	
-	mainMenu();
 	
 	termServices();
 	

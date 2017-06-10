@@ -6,7 +6,8 @@
 #include <string.h>
 #include <malloc.h>
 
-#include "Ubuntu_ttf.h"
+#include "UbuntuMedium_ttf.h"
+#include "UbuntuRegular_ttf.h"
 
 #define selector_xDistance 0 //The distance between the X axis of the two selections
 #define selector_yDistance 18 //The distance between the Y axis of the two selections
@@ -15,7 +16,7 @@
 
 char kernerlVersion[100], systemVersion[100], firmVersion[100], sdmcCID[36], nandCID[36], username[15], birthday[6];
 
-sftd_font *font;
+sftd_font *font_m, *font_r;
 sf2d_texture *topScreen, *bottomScreen, *logo;
 
 udsConnectionStatus status;
