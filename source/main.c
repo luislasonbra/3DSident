@@ -1,257 +1,205 @@
-#include <3ds.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-#include <malloc.h>
-#include <unistd.h>
-
-#include "actu.h"
-#include "am.h"
-#include "cfgs.h"
-#include "gsplcd.h"
-#include "mcu.h"
-#include "misc.h"
-#include "power.h"
-#include "screenshot.h"
-#include "system.h"
+#include "main.h"
 #include "utils.h"
-
-#define SDK(a,b,c,d) ((a<<24)|(b<<16)|(c<<8)|d)
 
 void initServices()
 {
-	gfxInitDefault();
-	cfguInit();
-	cfgsInit();
-	fsInit();
-	sdmcInit();
-	ptmuInit();
-	mcuInit();
-	amInit();
-	amAppInit();
-	psInit();
-	aptInit();
 	hidInit();
-	actuInit();
-	actInit(SDK(11,2,0,200), 0x20000);
-	httpcInit(0x9000);
+	romfsInit();
+	sf2d_init();
+	sftd_init();
+	
+	sf2d_set_clear_color(RGBA8(0, 0, 0, 255));
+	sf2d_set_vblank_wait(0);
+	
+	btn_A = sfil_load_PNG_file("romfs:/buttons/A.png", SF2D_PLACE_RAM); setBilinearFilter(btn_A);
+	btn_B = sfil_load_PNG_file("romfs:/buttons/B.png", SF2D_PLACE_RAM); setBilinearFilter(btn_B);
+	btn_X = sfil_load_PNG_file("romfs:/buttons/X.png", SF2D_PLACE_RAM); setBilinearFilter(btn_X);
+	btn_Y = sfil_load_PNG_file("romfs:/buttons/Y.png", SF2D_PLACE_RAM); setBilinearFilter(btn_Y);
+	btn_Start_Select = sfil_load_PNG_file("romfs:/buttons/Start_select.png", SF2D_PLACE_RAM); setBilinearFilter(btn_Start_Select);
+	btn_L = sfil_load_PNG_file("romfs:/buttons/L.png", SF2D_PLACE_RAM); setBilinearFilter(btn_L);
+	btn_R = sfil_load_PNG_file("romfs:/buttons/R.png", SF2D_PLACE_RAM); setBilinearFilter(btn_R);
+	btn_ZL = sfil_load_PNG_file("romfs:/buttons/ZL.png", SF2D_PLACE_RAM); setBilinearFilter(btn_ZL);
+	btn_ZR = sfil_load_PNG_file("romfs:/buttons/ZR.png", SF2D_PLACE_RAM); setBilinearFilter(btn_ZR);
+	btn_Dpad = sfil_load_PNG_file("romfs:/buttons/D_pad.png", SF2D_PLACE_RAM); setBilinearFilter(btn_Dpad);
+	btn_Cpad = sfil_load_PNG_file("romfs:/buttons/Circle_pad.png", SF2D_PLACE_RAM); setBilinearFilter(btn_Cpad);
+	btn_Cstick = sfil_load_PNG_file("romfs:/buttons/C_stick.png", SF2D_PLACE_RAM); setBilinearFilter(btn_Cstick);
+	btn_home = sfil_load_PNG_file("romfs:/buttons/Home.png", SF2D_PLACE_RAM); setBilinearFilter(btn_home);
+	
+	cursor = sfil_load_PNG_file("romfs:/buttons/cursor.png", SF2D_PLACE_RAM); setBilinearFilter(cursor);
+	volumeIcon = sfil_load_PNG_file("romfs:/buttons/volume.png", SF2D_PLACE_RAM); setBilinearFilter(volumeIcon);
+	
+	font = sftd_load_font_mem(Ubuntu_ttf, Ubuntu_ttf_size);
+	
+	if (isN3DS())
+		osSetSpeedupEnable(true);
 }
 
 void termServices()
 {
-	httpcExit();
-	actExit();
-	actuExit();
+	romfsExit();
+	sftd_fini();
+	sf2d_fini();
 	hidExit();
-	aptExit();
-	psExit();
-	acExit();
-	amExit();
-	mcuExit();
-	ptmuExit();
-	sdmcExit();
-	fsExit();
-	cfgsExit();
-	cfguExit();
-	gfxExit();
+}
+
+void mainMenu()
+{
+	circlePosition cPad;
+	circlePosition cStick;
+	touchPosition touch;
+	
+	u16 touch_x = 0, touch_y = 0;
+	
+	u8 volume;
+	
+	while (aptMainLoop())
+    {
+		hidScanInput();
+		//irrstScanInput(); // Already defined in hidScanInput();
+		hidCircleRead(&cPad);
+		hidCstickRead(&cStick);
+		
+		u32 kHeld = hidKeysHeld();
+		
+		HIDUSER_GetSoundVolume(&volume);
+		
+		sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+		
+		sf2d_draw_rectangle(0, 0, 320, 240, RGBA8(48, 10, 36, 255));
+		
+		if (kHeld & KEY_TOUCH) 
+		{
+			hidTouchRead(&touch);
+			touch_x = touch.px;
+			touch_y = touch.py;
+		}
+		sf2d_draw_texture(cursor, touch_x, touch_y);
+		
+		sf2d_end_frame();
+		
+		sf2d_start_frame(GFX_TOP, GFX_LEFT);
+		
+		sf2d_draw_rectangle(0, 0, 400, 240, RGBA8(60, 61, 63, 255));
+	
+		sf2d_draw_rectangle(75, 30, 250, 210, RGBA8(97, 101, 104, 255));
+		sf2d_draw_rectangle(85, 40, 230, 175, RGBA8(242, 241, 239, 255));
+		sf2d_draw_rectangle(85, 40, 230, 15, RGBA8(66, 65, 61, 255));
+	
+		sftd_draw_textf(font, 90, 40, RGBA8(230, 232, 214, 255), 11, "3DSident Button Test");
+	
+		sftd_draw_textf(font, 90, 56, RGBA8(77, 76, 74, 255), 11, "Circle pad: %04d, %04d", cPad.dx, cPad.dy);
+		sftd_draw_textf(font, 90, 70, RGBA8(77, 76, 74, 255), 11, "C stick: %04d, %04d", cStick.dx, cStick.dy);
+		sftd_draw_textf(font, 90, 84, RGBA8(77, 76, 74, 255), 11, "Touch position: %03d, %03d", touch.px, touch.py);
+		sftd_draw_textf(font, 90, 84, RGBA8(77, 76, 74, 255), 11, "Touch position: %03d, %03d", touch.px, touch.py);
+		
+		sf2d_draw_texture(volumeIcon, 90, 98);
+		double volPercent = (volume * 1.5873015873);
+		sf2d_draw_rectangle(115, 104, 190, 5, RGBA8(219, 219, 219, 255));
+		sf2d_draw_rectangle(115, 104, ((volPercent / 100) * 190), 5, RGBA8(241, 122, 74, 255));
+		
+		sftd_draw_textf(font, 90, 118, RGBA8(77, 76, 74, 255), 11, "3D");
+		double _3dSliderPercent = (osGet3DSliderState() * 100.0);
+		sf2d_draw_rectangle(115, 122, 190, 5, RGBA8(219, 219, 219, 255));
+		sf2d_draw_rectangle(115, 122, ((_3dSliderPercent / 100) * 190), 5, RGBA8(241, 122, 74, 255));
+		
+		sftd_draw_textf(font, 90, 138, RGBA8(77, 76, 74, 255), 11, "Use home button to exit.");
+	
+		sf2d_draw_texture(btn_home, 180, 215);
+		
+		if (kHeld & KEY_L)
+			sf2d_draw_texture_blend(btn_L, 0, 0, RGBA8(242, 119, 62, 100));
+		else
+			sf2d_draw_texture(btn_L, 0, 0);
+	
+		if (kHeld & KEY_R)
+			sf2d_draw_texture_blend(btn_R, 345, 0, RGBA8(242, 119, 62, 100));
+		else
+			sf2d_draw_texture(btn_R, 345, 0);
+	
+		if (kHeld & KEY_ZL)
+			sf2d_draw_texture_blend(btn_ZL, 60, 0, RGBA8(242, 119, 62, 100));
+		else
+			sf2d_draw_texture(btn_ZL, 60, 0);
+	
+		if (kHeld & KEY_ZR)
+			sf2d_draw_texture_blend(btn_ZR, 300, 0, RGBA8(242, 119, 62, 100));
+		else
+			sf2d_draw_texture(btn_ZR, 300, 0);
+	
+		if (kHeld & KEY_A)
+			sf2d_draw_texture_blend(btn_A, 370, 80, RGBA8(242, 119, 62, 100));
+		else
+			sf2d_draw_texture(btn_A, 370, 80);
+	
+		if (kHeld & KEY_B)
+			sf2d_draw_texture_blend(btn_B, 350, 100, RGBA8(242, 119, 62, 100));
+		else
+			sf2d_draw_texture(btn_B, 350, 100);
+	
+		if (kHeld & KEY_X)
+			sf2d_draw_texture_blend(btn_X, 350, 60, RGBA8(242, 119, 62, 100));
+		else
+			sf2d_draw_texture(btn_X, 350, 60);
+	
+		if (kHeld & KEY_Y)
+			sf2d_draw_texture_blend(btn_Y, 330, 80, RGBA8(242, 119, 62, 100));
+		else
+			sf2d_draw_texture(btn_Y, 330, 80);
+	
+		if (kHeld & KEY_START)
+			sf2d_draw_texture_blend(btn_Start_Select, 330, 140, RGBA8(242, 119, 62, 100));
+		else
+			sf2d_draw_texture(btn_Start_Select, 330, 140);
+	
+		if (kHeld & KEY_SELECT)
+			sf2d_draw_texture_blend(btn_Start_Select, 330, 165, RGBA8(242, 119, 62, 100));
+		else
+			sf2d_draw_texture(btn_Start_Select, 330, 165);
+	
+		if (kHeld & KEY_CPAD_LEFT)
+			sf2d_draw_texture_blend(btn_Cpad, 3, 55, RGBA8(242, 119, 62, 100));
+		else if (kHeld & KEY_CPAD_RIGHT)
+			sf2d_draw_texture_blend(btn_Cpad, 13, 55, RGBA8(242, 119, 62, 100));
+		else if (kHeld & KEY_CPAD_UP)
+			sf2d_draw_texture_blend(btn_Cpad, 8, 50, RGBA8(242, 119, 62, 100));
+		else if (kHeld & KEY_CPAD_DOWN)
+			sf2d_draw_texture_blend(btn_Cpad, 8, 60, RGBA8(242, 119, 62, 100));
+		else
+			sf2d_draw_texture(btn_Cpad, 8, 55);
+	
+		if (kHeld & KEY_DLEFT)
+			sf2d_draw_texture_blend(btn_Dpad, 0, 110, RGBA8(242, 119, 62, 100));
+		else if (kHeld & KEY_DRIGHT)
+			sf2d_draw_texture_blend(btn_Dpad, 10, 110, RGBA8(242, 119, 62, 100));
+		else if (kHeld & KEY_DUP)
+			sf2d_draw_texture_blend(btn_Dpad, 5, 105, RGBA8(242, 119, 62, 100));
+		else if (kHeld & KEY_DDOWN)
+			sf2d_draw_texture_blend(btn_Dpad, 5, 115, RGBA8(242, 119, 62, 100));
+		else
+			sf2d_draw_texture(btn_Dpad, 5, 110);
+	
+		if (kHeld & KEY_CSTICK_LEFT)
+			sf2d_draw_texture_blend(btn_Cstick, 325, 35, RGBA8(242, 119, 62, 100));
+		else if (kHeld & KEY_CSTICK_RIGHT)
+			sf2d_draw_texture_blend(btn_Cstick, 335, 35, RGBA8(242, 119, 62, 100));
+		else if (kHeld & KEY_CSTICK_UP)
+			sf2d_draw_texture_blend(btn_Cstick, 330, 30, RGBA8(242, 119, 62, 100));
+		else if (kHeld & KEY_CSTICK_DOWN)
+			sf2d_draw_texture_blend(btn_Cstick, 330, 40, RGBA8(242, 119, 62, 100));
+		else
+			sf2d_draw_texture(btn_Cstick, 330, 35);
+		
+		endDrawing();
+	}
 }
 
 int main(int argc, char *argv[])
-{
+{      
 	initServices();
 	
-	consoleInit(GFX_BOTTOM, NULL);
-	
-	printf("\n\x1b[32;1m> Press any key to exit =)\x1b[0m");
-	//printf("\x1b[31;1m*\x1b[0m Device cert: \x1b[31;1m%s\x1b[0m \n\n", getDeviceCert());
-	
-	consoleInit(GFX_TOP, NULL);
-
-	//=====================================================================//
-	//------------------------Variable Declaration-------------------------//
-	//=====================================================================//
-	
-	char *str_ver = (char *)malloc(sizeof(char) * 255), *str_sysver = (char *)malloc(sizeof(char) * 255);
-	double wifiPercent, volPercent, _3dSliderPercent;
-	u32 os_ver = osGetKernelVersion(), firm_ver = osGetKernelVersion(), installedTitles = titleCount(MEDIATYPE_SD), nnidNum = 0xFFFFFFFF;
-	u8 buf[16], batteryPercent, batteryVolt, volume;
-	OS_VersionBin *nver = (OS_VersionBin *)malloc(sizeof(OS_VersionBin)), *cver = (OS_VersionBin *)malloc(sizeof(OS_VersionBin));
-	s32 ret;
-	FS_ArchiveResource	resource = {0};
-
-	printf("\x1b[0;0H"); //Move the cursor to the top left corner of the screen
-	printf("\x1b[32;1m3DSident 0.7.5\x1b[0m\n\n");
-
-	//u32 brightness  = 0;
-	//GSPLCD_GetBrightness(brightness);
-	
-	//printf("\x1b[32;1m*\x1b[0m Brightness: \x1b[32;1m%i\x1b[0m\n", (int)brightness);
-
-	//=====================================================================//
-	//------------------------------Firm Info------------------------------//
-	//=====================================================================//
-		
-	snprintf(str_ver, 255, "\x1b[33;1m*\x1b[0m Kernel version: \x1b[33;1m%lu.%lu-%lu\n*\x1b[0m FIRM version is: \x1b[33;1m%lu.%lu-%lu\x1b[0m \n",
-			GET_VERSION_MAJOR(os_ver),
-			GET_VERSION_MINOR(os_ver),
-			GET_VERSION_REVISION(os_ver),
-			GET_VERSION_MAJOR(firm_ver),
-			GET_VERSION_MINOR(firm_ver),
-			GET_VERSION_REVISION(firm_ver)
-			);
-
-	printf(str_ver);
-
-	memset(nver, 0, sizeof(OS_VersionBin));
-	memset(cver, 0, sizeof(OS_VersionBin));
-	ret = osGetSystemVersionData(nver, cver);
-
-	if (ret)
-		printf("\x1b[33;1m*\x1b[0m osGetSystemVersionData returned 0x%08liX\n\n", ret);
-
-	snprintf(str_sysver, 100, "\x1b[33;1m*\x1b[0m Current system version: \x1b[33;1m%d.%d.%d-%d\x1b[0m\n\n",
-			cver->mainver,
-			cver->minor,
-			cver->build,
-			nver->mainver
-			);
-
-	if (!ret)
-		printf(str_sysver);
-		
-	//=====================================================================//
-	//-----------------------------System Info-----------------------------//
-	//=====================================================================//
-	
-	printf("\x1b[31;1m*\x1b[0m Model: \x1b[31;1m%s\x1b[0m (\x1b[31;1m%s\x1b[0m) \n\x1b[0m", getModel(), getRegion());
-	printf("\x1b[31;1m*\x1b[0m Screen type: \x1b[31;1m %s \n\x1b[0m", getScreenType());
-	printf("\x1b[31;1m*\x1b[0m Language: \x1b[31;1m%s\x1b[0m \n", getLang());
-	printf("\x1b[31;1m*\x1b[0m NNID: \x1b[31;1m%s\x1b[0m ", (char*)getNNID());
-
-	ret = ACTU_Initialize(0xB0002C8, 0, 0);
-	ret = ACTU_GetAccountDataBlock(0xFE, 4, 12, &nnidNum);
-
-	if (nnidNum != 0xFFFFFFFF)
-		printf("(\x1b[31;1m%d\x1b[0m) \n", (int) nnidNum);
-	else
-		printf("\x1b[31;1mError could not retrieve NNID\x1b[0m\n");
-
-	printf("\x1b[31;1m*\x1b[0m Device ID: \x1b[31;1m%lu \n", getDeviceId());
-	printf("\x1b[31;1m*\x1b[0m ECS Device ID: \x1b[31;1m%llu \n", getSoapId());
-	printf("\x1b[31;1m*\x1b[0m Local friend code seed: \x1b[31;1m%010llX\x1b[0m \n", getLocalFriendCodeSeed());	
-	printf("\x1b[31;1m*\x1b[0m MAC Address: \x1b[31;1m%s\x1b[0m \n", getMacAddress());
-	printf("\x1b[31;1m*\x1b[0m Serial number: \x1b[31;1m%s\x1b[0m \n", getSerialNum());
-
-	FSUSER_GetSdmcCid(buf, 0x10);
-	printf("\x1b[31;1m*\x1b[0m SDMC CID: \x1b[31;1m%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\x1b[0m \n",
-			buf[0], buf[1], buf[2], buf[3], buf[4], buf[5],
-			buf[6], buf[7], buf[8], buf[9], buf[10], buf[11],
-			buf[12], buf[13], buf[14], buf[15]);
-
-	FSUSER_GetNandCid(buf, 0x10);
-	printf("\x1b[31;1m*\x1b[0m NAND CID: \x1b[31;1m%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\x1b[0m \n\n",
-			buf[0], buf[1], buf[2], buf[3], buf[4], buf[5],
-			buf[6], buf[7], buf[8], buf[9], buf[10], buf[11], 
-			buf[12], buf[13], buf[14], buf[15]);
-			
-	//=====================================================================//
-	//----------------------------Battery Info-----------------------------//
-	//=====================================================================//
-	
-	mcuGetBatteryLevel(&batteryPercent);
-	printf("\x1b[34;1m*\x1b[0m Battery percentage: \x1b[34;1m%3d%%\x1b[0m (\x1b[34;1m%s\x1b[0m) \n\x1b[0m", batteryPercent, batteryStatus());
-
-	mcuGetBatteryVoltage(&batteryVolt);
-	printf("\x1b[34;1m*\x1b[0m Battery voltage: \x1b[34;1m%d\x1b[0m\n", batteryVolt);//,(Estimated: %0.1lf V) estimatedVolt);
-	
-	u8 mcuFwMajor, mcuFwMinor;
-	
-	GetMcuFwVerHigh(&mcuFwMajor);
-	GetMcuFwVerLow(&mcuFwMinor);
-	
-	//if (CFG_UNITINFO == 0)
-	printf("\x1b[34;1m*\x1b[0m MCU firmware: \x1b[34;1m%u.%u\x1b[0m\n\n", (mcuFwMajor - 16), mcuFwMinor);
-		
-	//=====================================================================//
-	//------------------------------Misc Info------------------------------//
-	//=====================================================================//
-		
-	char sdFreeSize[16], sdTotalSize[16];
-	char ctrFreeSize[16], ctrTotalSize[16];	
-		
-	FSUSER_GetArchiveResource(&resource, SYSTEM_MEDIATYPE_SD);
-	getSizeString(sdFreeSize, (((u64) resource.freeClusters * (u64) resource.clusterSize)));
-	getSizeString(sdTotalSize, (((u64) resource.totalClusters * (u64) resource.clusterSize)));
-	printf("\x1b[32;1m*\x1b[0m SD Size: \x1b[32;1m%s\x1b[0m / \x1b[32;1m%s\x1b[0m \n", sdFreeSize, sdTotalSize);
-
-	FSUSER_GetArchiveResource(&resource, SYSTEM_MEDIATYPE_CTR_NAND);
-	getSizeString(ctrFreeSize, (((u64) resource.freeClusters * (u64) resource.clusterSize)));
-	getSizeString(ctrTotalSize, (((u64) resource.totalClusters * (u64) resource.clusterSize)));
-	printf("\x1b[32;1m*\x1b[0m CTR Size: \x1b[32;1m%s\x1b[0m / \x1b[32;1m%s\x1b[0m \n", ctrFreeSize, ctrTotalSize);
-
-	printf("\x1b[32;1m*\x1b[0m Installed titles: \x1b[32;1m%i\x1b[0m\n", (int)installedTitles);
-	
-	wifiPercent = (osGetWifiStrength() * 33.3333333333);
-	printf("\x1b[32;1m*\x1b[0m WiFi signal strength: \x1b[32;1m%d\x1b[0m  (\x1b[32;1m%.0lf%%\x1b[0m) \n", osGetWifiStrength(), wifiPercent);
-
-	HIDUSER_GetSoundVolume(&volume);
-	volPercent = (volume * 1.5873015873);
-	printf("\x1b[32;1m*\x1b[0m Volume slider state: \x1b[32;1m%d\x1b[0m  (\x1b[32;1m%.0lf%%\x1b[0m) \n", volume, volPercent);
-
-	_3dSliderPercent = (osGet3DSliderState() * 100.0);
-	printf("\x1b[32;1m*\x1b[0m 3D slider state: \x1b[32;1m%.1lf\x1b[0m  (\x1b[32;1m%.0lf%%\x1b[0m)   \n", osGet3DSliderState(), _3dSliderPercent);
-	
-	printf("\x1b[32;1m*\x1b[0m Brightness: \x1b[32;1m%s\x1b[0m \n", getBrightness(1));
-
-	while (aptMainLoop())
-	{
-		//=====================================================================//
-		//----------------------------Battery Info-----------------------------//
-		//=====================================================================//
-		
-		printf("\x1b[18;0H"); //Move the cursor to the top left corner of the screen
-		mcuGetBatteryLevel(&batteryPercent);
-		printf("\x1b[34;1m*\x1b[0m Battery percentage: \x1b[34;1m%3d%%\x1b[0m (\x1b[34;1m%s\x1b[0m) \n\x1b[0m", batteryPercent, batteryStatus());
-
-		printf("\x1b[19;0H"); //Move the cursor to the top left corner of the screen
-		mcuGetBatteryVoltage(&batteryVolt);
-		printf("\x1b[34;1m*\x1b[0m Battery voltage: \x1b[34;1m%d\x1b[0m\n", batteryVolt);//,(Estimated: %0.1lf V) estimatedVolt);
-		//=====================================================================//
-		//------------------------------Misc Info------------------------------//
-		//=====================================================================//
-		
-		printf("\x1b[24;0H"); // Move the cursor
-		wifiPercent = (osGetWifiStrength() * 33.3333333333);
-		printf("\x1b[32;1m*\x1b[0m WiFi signal strength: \x1b[32;1m%d\x1b[0m  (\x1b[32;1m%.0lf%%\x1b[0m) \n", osGetWifiStrength(), wifiPercent);
-
-		printf("\x1b[25;0H"); //Move the cursor
-		HIDUSER_GetSoundVolume(&volume);
-		volPercent = (volume * 1.5873015873);
-		printf("\x1b[32;1m*\x1b[0m Volume slider state: \x1b[32;1m%d\x1b[0m  (\x1b[32;1m%.0lf%%\x1b[0m)  \n", volume, volPercent);
-
-		printf("\x1b[26;0H"); //Move the cursor
-		_3dSliderPercent = (osGet3DSliderState() * 100.0);
-		printf("\x1b[32;1m*\x1b[0m 3D slider state: \x1b[32;1m%.1lf\x1b[0m  (\x1b[32;1m%.0lf%%\x1b[0m)   \n", osGet3DSliderState(), _3dSliderPercent);
-		
-		gspWaitForVBlank();
-		hidScanInput();
-		u32 kHeld = hidKeysHeld();
-		
-		if ((kHeld & KEY_L) && (kHeld & KEY_R))
-			captureScreenshot();
-		
-		else if (hidKeysDown())
-			break;
-		
-		gfxFlushBuffers();
-		gfxSwapBuffers();
-	}
-	
-	free(nver);
-	free(cver);
-	free(str_ver);
-	free(str_sysver);
+	mainMenu();
 	
 	termServices();
-	return 0;
+	
+	return 0;	
 }

@@ -33,25 +33,23 @@ RESOURCES   :=	resources
 SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
+ROMFS		:=	romfs
 
-APP_TITLE	:= 3DSident
-APP_DESCRIPTION	:= Get more info about your 3DS, firmware, region etc. 
+APP_TITLE	:= 3DSident Button Tester
+APP_DESCRIPTION	:= Tests for faulty/damadged buttons.
 APP_AUTHOR	:= Joel16
 
-ICON := $(RESOURCES)/icon.png
-BANNER := $(RESOURCES)/banner.png
-JINGLE := $(RESOURCES)/banner.wav
-LOGO := $(RESOURCES)/logo.bcma.lz
-
-VERSION_MAJOR := 0
-VERSION_MINOR := 7
-VERSION_MICRO := 2
+ICON 		:= $(RESOURCES)/icon.png
+BANNER 		:= $(RESOURCES)/banner.png
+JINGLE 		:= $(RESOURCES)/banner.wav
+LOGO 		:= resources/logo.bcma.lz
 
 # CIA
-APP_PRODUCT_CODE := 3DS-I
-APP_UNIQUE_ID := 0x16000
-APP_SYSTEM_MODE := 64MB
+APP_PRODUCT_CODE 	:= 3DSGB
+APP_UNIQUE_ID 		:= 0x16300
+APP_SYSTEM_MODE 	:= 64MB
 APP_SYSTEM_MODE_EXT := Legacy
+APP_ROMFS_DIR		:= $(TOPDIR)/romfs
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -59,7 +57,7 @@ APP_SYSTEM_MODE_EXT := Legacy
 
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard
 
-CFLAGS	:=	-g -Wall -O2 -mword-relocations -Werror -DVERSION=$(VERSION)\
+CFLAGS	:=	-g -Wall -O2 -mword-relocations -Werror \
 			-fomit-frame-pointer -ffast-math \
 			$(ARCH)
 
@@ -70,7 +68,7 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:= -lpng16 -lz -lm -lctru
+LIBS	:= -lsftd -lsfil -lfreetype -lpng16 -ljpeg -lz -lsf2d -lcitro3d -lctru -lm
 
 OS := $(shell uname)
 
@@ -84,6 +82,8 @@ LIBDIRS  := $(CTRULIB) $(PORTLIBS)
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
 # rules for different file extensions
+#---------------------------------------------------------------------------------
+
 #---------------------------------------------------------------------------------
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
@@ -145,29 +145,13 @@ else
 	export APP_ICON := $(TOPDIR)/$(ICON)
 endif
 
-ifneq ("$(wildcard $(LOGO))","")
-	COMMON_MAKEROM_FLAGS += -logo "$(LOGO)"
-else ifneq ($(LOGO),plain)
-    COMMON_MAKEROM_FLAGS += -logo "$(RESOURCES)/logo.bcma.lz"
-endif
-
 ifeq ($(strip $(NO_SMDH)),)
 	export _3DSXFLAGS += --smdh=$(CURDIR)/$(TARGET).smdh
 endif
 
-#---------------------------------------------------------------------------------
-# 3DS CIA
-#---------------------------------------------------------------------------------
-
-export BUILD_ARGS := \
--DAPP_TITLE=$(APP_TITLE) \
--DAPP_PRODUCT_CODE=$(APP_PRODUCT_CODE) \
--DAPP_UNIQUE_ID=$(APP_UNIQUE_ID) \
--DAPP_SYSTEM_MODE=$(APP_SYSTEM_MODE) \
--DAPP_SYSTEM_MODE_EXT=$(APP_SYSTEM_MODE_EXT) \
--elf $(OUTPUT).elf -rsf "$(TOPDIR)/resources/cia.rsf" \
--icon $(TOPDIR)/icon.bin \
--banner $(TOPDIR)/banner.bin -exefslogo -target t
+ifneq ($(ROMFS),)
+	export _3DSXFLAGS += --romfs=$(CURDIR)/$(ROMFS)
+endif
 
 .PHONY: $(BUILD) clean all
 
@@ -182,34 +166,12 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 
 clean:
-	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(OUTPUT).elf $(OUTPUT).3ds $(TARGET).cia icon.bin banner.bin
+	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(OUTPUT).elf $(OUTPUT)-stripped.elf $(OUTPUT).bin $(OUTPUT).3ds $(OUTPUT).cia icon.bin banner.bin
 
 #---------------------------------------------------------------------------------
 
 banner:
 	@$(TOPDIR)/tools/bannertool
-
-#---------------------------------------------------------------------------------
-	
-cia: clean all
-	@arm-none-eabi-strip $(TARGET).elf
-	@makerom -f cia -o $(TARGET).cia -elf $(TARGET).elf -rsf $(RESOURCE)/cia.rsf -icon $(RESOURCES)/icon.png -banner $(RESOURCES)/banner.png -major $(VERSION_MAJOR) -minor $(VERSION_MINOR) -micro $(VERSION_MICRO) -exefslogo -target t
-	
-#---------------------------------------------------------------------------------
-
-$(TARGET)-strip.elf: $(BUILD)
-	@$(STRIP) --strip-all $(TARGET).elf -o $(TARGET)-strip.elf
-
-#---------------------------------------------------------------------------------
-
-send: $(BUILD)
-	@3dslink $(TARGET).3dsx
-
-#---------------------------------------------------------------------------------
-
-run: $(BUILD)
-	@citra $(TARGET).3dsx
 
 #---------------------------------------------------------------------------------
 
@@ -222,94 +184,128 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 
 ifeq ($(strip $(NO_SMDH)),)
-$(OUTPUT).3dsx	:	$(OUTPUT).smdh icon.bin banner.bin $(OUTPUT).elf $(OUTPUT).3ds $(OUTPUT).cia
+$(OUTPUT).3dsx	:	$(OUTPUT).smdh icon.bin banner.bin $(OUTPUT).elf $(OUTPUT)-stripped.elf $(OUTPUT).bin $(OUTPUT).3ds $(OUTPUT).cia
 else
-$(OUTPUT).3dsx	:	icon.bin banner.bin $(OUTPUT).elf $(OUTPUT).3ds $(OUTPUT).cia
+$(OUTPUT).3dsx	:	icon.bin banner.bin $(OUTPUT).elf $(OUTPUT)-stripped.elf $(OUTPUT).bin $(OUTPUT).3ds $(OUTPUT).cia
 endif
 
 #---------------------------------------------------------------------------------
-icon.bin	:	
+
+icon.bin	:
+
 #---------------------------------------------------------------------------------
 
-ifeq ($(OS), Linux)
+ifeq ($(UNAME), Linux)
 	@$(TOPDIR)/tools/linux/bannertool makesmdh -s $(APP_TITLE) -l $(APP_TITLE) -p $(APP_AUTHOR) -i $(TOPDIR)/$(ICON) -o $(TOPDIR)/icon.bin -f visible allow3d
-else ifeq ($(OS), Darwin)
+else ifeq ($(UNAME), Darwin)
 	@$(TOPDIR)/tools/osx/bannertool makesmdh -s $(APP_TITLE) -l $(APP_TITLE) -p $(APP_AUTHOR) -i $(TOPDIR)/$(ICON) -o $(TOPDIR)/icon.bin -f visible allow3d
 else
 	@$(TOPDIR)/tools/windows/bannertool.exe makesmdh -s $(APP_TITLE) -l $(APP_TITLE) -p $(APP_AUTHOR) -i $(TOPDIR)/$(ICON) -o $(TOPDIR)/icon.bin -f visible allow3d
 endif
 
 #---------------------------------------------------------------------------------
-banner.bin	:	
+
+banner.bin	:
+
 #---------------------------------------------------------------------------------
 
-ifeq ($(OS), Linux)
+ifeq ($(UNAME), Linux)
 	@$(TOPDIR)/tools/linux/bannertool makebanner -i $(TOPDIR)/$(BANNER) -a $(TOPDIR)/$(JINGLE) -o $(TOPDIR)/banner.bin
-else ifeq ($(OS), Darwin)
+else ifeq ($(UNAME), Darwin)
 	@$(TOPDIR)/tools/osx/bannertool makebanner -i $(TOPDIR)/$(BANNER) -a $(TOPDIR)/$(JINGLE) -o $(TOPDIR)/banner.bin
 else
 	@$(TOPDIR)/tools/windows/bannertool.exe makebanner -i $(TOPDIR)/$(BANNER) -a $(TOPDIR)/$(JINGLE) -o $(TOPDIR)/banner.bin
 endif
 
 #---------------------------------------------------------------------------------
+
 $(OUTPUT).elf	:	$(OFILES)
-#---------------------------------------------------------------------------------
 
 #---------------------------------------------------------------------------------
-$(OUTPUT).3ds	:	$(OUTPUT).elf icon.bin banner.bin
+
+$(OUTPUT)-stripped.elf : $(OUTPUT).elf
+
 #---------------------------------------------------------------------------------
 
-ifeq ($(OS), Linux)
-	@$(TOPDIR)/tools/linux/makerom -f cci -o $(OUTPUT).3ds $(BUILD_ARGS)
-else ifeq ($(OS), Darwin)
-	@$(TOPDIR)/tools/osx/makerom -f cci -o $(OUTPUT).3ds $(BUILD_ARGS)
+	@cp -f $(OUTPUT).elf $(OUTPUT)-stripped.elf
+	@arm-none-eabi-strip $(OUTPUT)-stripped.elf
+
+#---------------------------------------------------------------------------------
+
+$(OUTPUT).bin	:
+
+#---------------------------------------------------------------------------------
+ifeq ($(UNAME), Linux)
+	@$(TOPDIR)/tools/linux/3dstool -cvtf romfs $(OUTPUT).bin --romfs-dir $(APP_ROMFS_DIR)
+else ifeq ($(UNAME), Darwin)
+	@$(TOPDIR)/tools/osx/3dstool -cvtf romfs $(OUTPUT).bin --romfs-dir $(APP_ROMFS_DIR)
 else
-	@$(TOPDIR)/tools/windows/makerom.exe -f cci -o $(OUTPUT).3ds $(BUILD_ARGS)
+	@$(TOPDIR)/tools/windows/3dstool.exe -cvtf romfs $(OUTPUT).bin --romfs-dir $(APP_ROMFS_DIR)
+endif
+	@echo RomFS packaged ...
+
+#---------------------------------------------------------------------------------
+
+$(OUTPUT).3ds	:	$(OUTPUT)-stripped.elf $(OUTPUT).bin icon.bin banner.bin
+
+#---------------------------------------------------------------------------------
+ifeq ($(UNAME), Linux)
+	@$(TOPDIR)/tools/linux/makerom -f cci -o $(OUTPUT).3ds -DAPP_ENCRYPTED=true -DAPP_UNIQUE_ID=$(APP_UNIQUE_ID) -elf $(OUTPUT)-stripped.elf -rsf "$(TOPDIR)/resources/cia.rsf" -icon $(TOPDIR)/icon.bin -banner $(TOPDIR)/banner.bin  -exefslogo -target t -romfs "$(OUTPUT).bin"
+else ifeq ($(UNAME), Darwin)
+	@$(TOPDIR)/tools/osx/makerom -f cci -o $(OUTPUT).3ds -DAPP_ENCRYPTED=true -DAPP_UNIQUE_ID=$(APP_UNIQUE_ID) -elf $(OUTPUT)-stripped.elf -rsf "$(TOPDIR)/resources/cia.rsf" -icon $(TOPDIR)/icon.bin -banner $(TOPDIR)/banner.bin -exefslogo -target t -romfs "$(OUTPUT).bin"
+else
+	@$(TOPDIR)/tools/windows/makerom.exe -f cci -o $(OUTPUT).3ds -DAPP_ENCRYPTED=true -DAPP_UNIQUE_ID=$(APP_UNIQUE_ID) -elf $(OUTPUT)-stripped.elf -rsf "$(TOPDIR)/resources/cia.rsf" -icon $(TOPDIR)/icon.bin -banner $(TOPDIR)/banner.bin  -exefslogo -target t -romfs "$(OUTPUT).bin"
 endif
 	@echo 3DS packaged ...
 
 #---------------------------------------------------------------------------------
-$(OUTPUT).cia	:	$(OUTPUT).elf icon.bin banner.bin
+
+$(OUTPUT).cia	:	$(OUTPUT)-stripped.elf $(OUTPUT).bin icon.bin banner.bin
+
 #---------------------------------------------------------------------------------
 
-ifeq ($(OS), Linux)
-	@$(TOPDIR)/tools/linux/makerom -f cia -o $(OUTPUT).cia $(BUILD_ARGS)
-else ifeq ($(OS), Darwin)
-	@$(TOPDIR)/tools/osx/makerom -f cia -o $(OUTPUT).cia $(BUILD_ARGS)
+ifeq ($(UNAME), Linux)
+	@$(TOPDIR)/tools/linux/makerom -f cia -o $(OUTPUT).cia -DAPP_ENCRYPTED=false -DAPP_UNIQUE_ID=$(APP_UNIQUE_ID) -elf $(OUTPUT)-stripped.elf -rsf "$(TOPDIR)/resources/cia.rsf" -icon $(TOPDIR)/icon.bin -logo "$(TOPDIR)/resources/logo.bcma.lz" -banner $(TOPDIR)/banner.bin  -exefslogo -target t -romfs "$(OUTPUT).bin"
+else ifeq ($(UNAME), Darwin)
+	@$(TOPDIR)/tools/osx/makerom -f cia -o $(OUTPUT).cia -DAPP_ENCRYPTED=false -DAPP_UNIQUE_ID=$(APP_UNIQUE_ID) -elf $(OUTPUT)-stripped.elf -rsf "$(TOPDIR)/resources/cia.rsf" -icon $(TOPDIR)/icon.bin -logo "$(TOPDIR)/resources/logo.bcma.lz" -banner $(TOPDIR)/banner.bin -exefslogo -target t -romfs "$(OUTPUT).bin"
 else
-	@$(TOPDIR)/tools/windows/makerom.exe -f cia -o $(OUTPUT).cia $(BUILD_ARGS)
+	@$(TOPDIR)/tools/windows/makerom.exe -f cia -o $(OUTPUT).cia -DAPP_ENCRYPTED=false -DAPP_UNIQUE_ID=$(APP_UNIQUE_ID) -elf $(OUTPUT)-stripped.elf -rsf "$(TOPDIR)/resources/cia.rsf" -icon $(TOPDIR)/icon.bin -logo "$(TOPDIR)/resources/logo.bcma.lz" -banner $(TOPDIR)/banner.bin  -exefslogo -target t -romfs "$(OUTPUT).bin"
 endif
 	@echo CIA packaged ...
 
 #---------------------------------------------------------------------------------
-# you need a rule like this for each extension you use as binary data
-#---------------------------------------------------------------------------------
 
-%.bin.o	:	%.bin
-
-#---------------------------------------------------------------------------------
-
-	@echo $(notdir $<)
-	@$(bin2o)
-
-#---------------------------------------------------------------------------------
 %.ttf.o	:	%.ttf
+
 #---------------------------------------------------------------------------------
 
 	@echo $(notdir $<)
 	@$(bin2o)
 
-# WARNING: This is not the right way to do this! TODO: Do it right!
 #---------------------------------------------------------------------------------
-%.vsh.o	:	%.vsh
+# rules for assembling GPU shaders
 #---------------------------------------------------------------------------------
 
+define shader-as
+	$(eval CURBIN := $(patsubst %.shbin.o,%.shbin,$(notdir $@)))
+	picasso -o $(CURBIN) $1
+	bin2s $(CURBIN) | $(AS) -o $@
+	echo "extern const u8" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`"_end[];" > `(echo $(CURBIN) | tr . _)`.h
+	echo "extern const u8" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`"[];" >> `(echo $(CURBIN) | tr . _)`.h
+	echo "extern const u32" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`_size";" >> `(echo $(CURBIN) | tr . _)`.h
+endef
+
+%.shbin.o : %.v.pica %.g.pica
+	@echo $(notdir $^)
+	@$(call shader-as,$^)
+
+%.shbin.o : %.v.pica
 	@echo $(notdir $<)
-	@picasso -o $(notdir $<).shbin $<
-	@bin2s $(notdir $<).shbin | $(PREFIX)as -o $@
-	@echo "extern const u8" `(echo $(notdir $<).shbin | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`"_end[];" > `(echo $(notdir $<).shbin | tr . _)`.h
-	@echo "extern const u8" `(echo $(notdir $<).shbin | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`"[];" >> `(echo $(notdir $<).shbin | tr . _)`.h
-	@echo "extern const u32" `(echo $(notdir $<).shbin | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`_size";" >> `(echo $(notdir $<).shbin | tr . _)`.h
+	@$(call shader-as,$<)
+
+%.shbin.o : %.shlist
+	@echo $(notdir $<)
+	@$(call shader-as,$(foreach file,$(shell cat $<),$(dir $<)/$(file)))
 
 -include $(DEPENDS)
 
