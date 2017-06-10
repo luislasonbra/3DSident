@@ -36,6 +36,25 @@ void initServices()
 
 void termServices()
 {
+	sftd_free_font(font);
+	
+	sf2d_free_texture(volumeIcon);
+	sf2d_free_texture(cursor);
+	
+	sf2d_free_texture(btn_home);
+	sf2d_free_texture(btn_Cstick);
+	sf2d_free_texture(btn_Cpad);
+	sf2d_free_texture(btn_Dpad);
+	sf2d_free_texture(btn_ZR);
+	sf2d_free_texture(btn_ZL);
+	sf2d_free_texture(btn_R);
+	sf2d_free_texture(btn_L);
+	sf2d_free_texture(btn_Start_Select);
+	sf2d_free_texture(btn_Y);
+	sf2d_free_texture(btn_X);
+	sf2d_free_texture(btn_B);
+	sf2d_free_texture(btn_A);
+	
 	romfsExit();
 	sftd_fini();
 	sf2d_fini();
