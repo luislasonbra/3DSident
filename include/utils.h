@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
-void setBilinearFilter(int enabled, sf2d_texture *texture);
+void setBilinearFilter(sf2d_texture *texture);
 void getSizeString(char *string, uint64_t size);
 char * base64Encode(u8 const * input);
+bool isN3DS();
+void endDrawing();

@@ -1,14 +1,8 @@
 #include "utils.h"
 
-int bilinearFilterEnabled;
-
-void setBilinearFilter(int enabled, sf2d_texture *texture)
+void setBilinearFilter(sf2d_texture *texture)
 {
-	bilinearFilterEnabled = enabled;
-	if (enabled == 1)
-	{
-		sf2d_texture_set_params(texture, GPU_TEXTURE_MAG_FILTER(GPU_LINEAR) | GPU_TEXTURE_MIN_FILTER(GPU_NEAREST));
-	}
+	sf2d_texture_set_params(texture, GPU_TEXTURE_MAG_FILTER(GPU_LINEAR) | GPU_TEXTURE_MIN_FILTER(GPU_NEAREST));
 }
 
 void getSizeString(char *string, uint64_t size) //Thanks TheOfficialFloW
@@ -78,4 +72,21 @@ char * base64Encode(u8 const * input)
     }
     ret[outlen] = '\0';
     return ret;
+}
+
+bool isN3DS()
+{
+	bool isNew3DS = 0;
+	APT_CheckNew3DS(&isNew3DS);
+    
+	if (isNew3DS)
+		return true;
+	else
+		return false;
+}
+
+void endDrawing()
+{
+	sf2d_end_frame();
+	sf2d_swapbuffers();
 }
