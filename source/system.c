@@ -272,3 +272,23 @@ char * getEulaVersion()
 	
 	return version;
 }
+
+char * getCardSlotStatus()
+{
+	bool isInserted = false;
+	FS_CardType cardType = 0;
+	
+	static char card[20];
+	
+	FSUSER_CardSlotIsInserted(&isInserted);
+	
+	if (isInserted)
+	{
+		FSUSER_GetCardType(&cardType);
+		sprintf(card, "inserted %s", cardType? "(TWL)" : "(CTR)");
+		return card;
+	}
+	
+	sprintf(card, "not inserted");
+	return card;
+}

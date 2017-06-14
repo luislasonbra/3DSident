@@ -16,3 +16,4 @@ char * getBrightness(u32 screen);
 const char * getUsername();
 char * getBirthday();
 char * getEulaVersion();
+char * getCardSlotStatus();

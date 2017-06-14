@@ -110,16 +110,15 @@ void miscMenu()
 
 void hardwareMenu()
 {
-	bool hpInserted = false, csInserted = false;
-	u8 volume;
+	bool hpInserted = false;
+	u8 volume = 0;
 	
 	sftd_draw_textf(font_m, ((400 - sftd_get_text_width(font_m, 12, "Hardware")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Hardware");
 	
 	DSP_GetHeadphoneStatus(&hpInserted);
 	sftd_draw_textf(font_r, 20, 120, RGBA8(77, 76, 74, 255), 12, "Headphone status: %s", hpInserted? "inserted" : "not inserted");
 	
-	FSUSER_CardSlotIsInserted(&csInserted);
-	sftd_draw_textf(font_r, 20, 136, RGBA8(77, 76, 74, 255), 12, "Card slot status: %s", csInserted? "inserted" : "not inserted");
+	sftd_draw_textf(font_r, 20, 136, RGBA8(77, 76, 74, 255), 12, "Card slot status: %s", getCardSlotStatus());
 	
 	sftd_draw_textf(font_r, 20, 152, RGBA8(77, 76, 74, 255), 12, "SDMC status: %s", detectSD()? "detected" : "not detected");
 	
