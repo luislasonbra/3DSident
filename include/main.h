@@ -1,3 +1,6 @@
+#ifndef MAIN_H
+#define MAIN_H
+
 #include <3ds.h>
 #include <sf2d.h>
 #include <sfil.h>
@@ -19,4 +22,4 @@ char kernerlVersion[100], systemVersion[100], firmVersion[100], sdmcCID[36], nan
 sftd_font *font_m, *font_r;
 sf2d_texture *topScreen, *bottomScreen, *logo;
 
-udsConnectionStatus status;
+#endif

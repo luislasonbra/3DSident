@@ -1,3 +1,6 @@
+#ifndef UTILS_H
+#define UTILS_H
+
 #include <3ds.h>
 #include <sf2d.h>
 #include <stdlib.h>
@@ -9,3 +12,5 @@ void getSizeString(char *string, uint64_t size);
 char * base64Encode(u8 const * input);
 bool isN3DS();
 void endDrawing();
+
+#endif

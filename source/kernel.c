@@ -25,13 +25,13 @@ char * getVersion(int version)
 	OS_VersionBin *nver = (OS_VersionBin *)malloc(sizeof(OS_VersionBin)), *cver = (OS_VersionBin *)malloc(sizeof(OS_VersionBin));
 	s32 ret;
 	
-	snprintf(str_kernel, 255, "Kernel version: %lu.%lu-%lu",
+	snprintf(str_kernel, 255, "%lu.%lu-%lu",
 			GET_VERSION_MAJOR(os_ver),
 			GET_VERSION_MINOR(os_ver),
 			GET_VERSION_REVISION(os_ver)
 	);
 	
-	snprintf(str_ver, 255, "FIRM version is: %lu.%lu-%lu\n",
+	snprintf(str_ver, 255, "%lu.%lu-%lu\n",
 			GET_VERSION_MAJOR(firm_ver),
 			GET_VERSION_MINOR(firm_ver),
 			GET_VERSION_REVISION(firm_ver)
@@ -42,9 +42,9 @@ char * getVersion(int version)
 	ret = osGetSystemVersionData(nver, cver);
 
 	if (ret)
-		snprintf(str_sysver, 100, "osGetSystemVersionData returned 0x%08liX", ret);
+		snprintf(str_sysver, 100, "0x%08liX", ret);
 	else
-		snprintf(str_sysver, 100, "Current system version: %d.%d.%d-%d",
+		snprintf(str_sysver, 100, "%d.%d.%d-%d",
 			cver->mainver,
 			cver->minor,
 			cver->build,

@@ -30,9 +30,9 @@ include $(DEVKITARM)/3ds_rules
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 RESOURCES   :=	resources
-SOURCES		:=	source
+SOURCES		:=	source source/services
 DATA		:=	data
-INCLUDES	:=	include
+INCLUDES	:=	include include/services
 ROMFS		:=	romfs
 
 APP_TITLE	:= 3DSident
