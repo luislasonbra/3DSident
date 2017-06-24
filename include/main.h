@@ -20,6 +20,6 @@
 char kernerlVersion[100], systemVersion[100], firmVersion[100], sdmcCID[36], nandCID[36], username[15], birthday[6];
 
 sftd_font *font_m, *font_r;
-sf2d_texture *topScreen, *bottomScreen, *logo;
+sf2d_texture *topScreen, *bottomScreen, *logo, *drive;
 
 #endif
