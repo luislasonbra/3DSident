@@ -232,31 +232,18 @@ void miscMenu()
 {
 	s64 clkRate = 0, higherClkRate = 0, L2CacheEnabled = 0;
 	
-	char sdFreeSize[16], sdTotalSize[16];
-	char ctrFreeSize[16], ctrTotalSize[16];
-	
 	double wifiPercent = (osGetWifiStrength() * 33.3333333333);
 	
 	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Miscelleanous")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Miscelleanous");
 	
-	getSizeString(sdFreeSize, getFreeStorage(SYSTEM_MEDIATYPE_SD));
-	getSizeString(sdTotalSize, getTotalStorage(SYSTEM_MEDIATYPE_SD));
-	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "SD Size:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "SD Size:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "%s / %s", sdFreeSize, sdTotalSize);
+	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "Installed titles:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Installed titles:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "SD: %i (NAND: %i)", (int)titleCount(MEDIATYPE_SD), (int)titleCount(MEDIATYPE_NAND));
 	
-	getSizeString(ctrFreeSize, getFreeStorage(SYSTEM_MEDIATYPE_CTR_NAND));
-	getSizeString(ctrTotalSize, getTotalStorage(SYSTEM_MEDIATYPE_CTR_NAND));
-	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "CTR Size:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "CTR Size:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%s / %s", ctrFreeSize, ctrTotalSize);
-				
-	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "Installed titles:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Installed titles:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%i", (int)titleCount(MEDIATYPE_SD));
+	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "WiFi signal strength:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi signal strength:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%d (%.0lf%%)", osGetWifiStrength(), wifiPercent);
 	
-	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "WiFi signal strength:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi signal strength:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%d (%.0lf%%)", osGetWifiStrength(), wifiPercent);
-	
-	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "Debug mode:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Debug mode:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%s", isDebugModeEnabled());
+	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "Debug mode:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Debug mode:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%s", isDebugModeEnabled());
 	
 	svcGetSystemInfo(&clkRate, 0x10001, 0);
     svcGetSystemInfo(&higherClkRate, 0x10001, 1);
@@ -264,17 +251,17 @@ void miscMenu()
 	
 	if (isN3DS())
 	{
-		sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "CPU clock frequency:");
-		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "CPU clock frequency:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%u MHz", clkRate != 268 ? (u32)higherClkRate : 268);
+		sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "CPU clock frequency:");
+		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "CPU clock frequency:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%u MHz", clkRate != 268 ? (u32)higherClkRate : 268);
 	}
 	else 
 	{
-		sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "CPU clock frequency:");
-		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "CPU clock frequency:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%u MHz", clkRate);
+		sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "CPU clock frequency:");
+		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "CPU clock frequency:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%u MHz", clkRate);
 	}
 	
-	sftd_draw_text(font_r, 20, 216, RGBA8(120, 118, 115, 255), 12, "L2 Cache:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "L2 Cache:") + 3), 216, RGBA8(67, 72, 66, 255), 12, "%s", L2CacheEnabled ? "enabled" : "disabled");
+	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "L2 Cache:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "L2 Cache:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%s", L2CacheEnabled ? "enabled" : "disabled");
 }
 
 void initServices()
