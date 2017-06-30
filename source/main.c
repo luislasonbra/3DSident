@@ -234,7 +234,7 @@ void miscMenu()
 	
 	double wifiPercent = (osGetWifiStrength() * 33.3333333333);
 	
-	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Miscelleanous")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Miscelleanous");
+	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Miscellaneous")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Miscellaneous");
 	
 	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "Installed titles:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Installed titles:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "SD: %i (NAND: %i)", (int)titleCount(MEDIATYPE_SD), (int)titleCount(MEDIATYPE_NAND));
@@ -420,9 +420,9 @@ int main(int argc, char *argv[])
 			sftd_draw_text(font_m, 22, 127, RGBA8(78, 74, 67, 255), 12, "Storage Information");
 		
 		if (MenuSelection == 7)
-			sftd_draw_text(font_m, 22, 145, RGBA8(250, 237, 227, 255), 12, "Miscelleanous");
+			sftd_draw_text(font_m, 22, 145, RGBA8(250, 237, 227, 255), 12, "Miscellaneous");
 		else
-			sftd_draw_text(font_m, 22, 145, RGBA8(78, 74, 67, 255), 12, "Miscelleanous");
+			sftd_draw_text(font_m, 22, 145, RGBA8(78, 74, 67, 255), 12, "Miscellaneous");
 		
 		if (MenuSelection == 8)
 			sftd_draw_text(font_m, 22, 163, RGBA8(250, 237, 227, 255), 12, "Exit");
