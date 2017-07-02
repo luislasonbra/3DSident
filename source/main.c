@@ -93,7 +93,7 @@ void batteryMenu()
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Battery status:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%s", batteryStatus());
 	
 	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "Battery voltage:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Battery voltage:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%d", batteryVolt);
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Battery voltage:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%d (%.1f)", batteryVolt, 5.0 * ((double)batteryVolt / 256.0));
 	
 	GetMcuFwVerHigh(&mcuFwMajor);
 	GetMcuFwVerLow(&mcuFwMinor);
