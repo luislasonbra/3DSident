@@ -242,8 +242,9 @@ void miscMenu()
 	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "WiFi signal strength:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi signal strength:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%d (%.0lf%%)", osGetWifiStrength(), wifiPercent);
 	
-	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "Debug mode:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Debug mode:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%s", isDebugModeEnabled());
+	u32 ip = gethostid();
+	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "IP:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "IP:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%lu.%lu.%lu.%lu", ip & 0xFF, (ip>>8)&0xFF, (ip>>16)&0xFF, (ip>>24)&0xFF);
 	
 	svcGetSystemInfo(&clkRate, 0x10001, 0);
     svcGetSystemInfo(&higherClkRate, 0x10001, 1);
@@ -342,23 +343,47 @@ void termServices()
 int	touchButton(touchPosition *touch, int MenuSelection)
 {
 	if (touch->px >= 15 && touch->px <= 300 && touch->py >= 37 && touch->py <= 56)
-		return (1);
+	{
+		svcSleepThread(50000000);
+		MenuSelection = 1;
+	}
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 56 && touch->py <= 73)
-		return (2);
+	{
+		svcSleepThread(50000000);
+		MenuSelection = 2;
+	}
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 73 && touch->py <= 92)
-		return (3);
+	{
+		svcSleepThread(50000000);
+		MenuSelection = 3;
+	}
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 92 && touch->py <= 110)
-		return (4);
+	{
+		svcSleepThread(50000000);
+		MenuSelection = 4;
+	}
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 110 && touch->py <= 127)
-		return (5);
+	{
+		svcSleepThread(50000000);
+		MenuSelection = 5;
+	}
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 127 && touch->py <= 144)
-		return (6);
+	{
+		svcSleepThread(50000000);
+		MenuSelection = 6;
+	}
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 144 && touch->py <= 161)
-		return (7);
+	{
+		svcSleepThread(50000000);
+		MenuSelection = 7;
+	}
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 161 && touch->py <= 178)
-		return (8);
+	{
+		svcSleepThread(50000000);
+		MenuSelection = 8;
+	}
 	
-	return (MenuSelection);
+	return MenuSelection;
 }
 
 int main(int argc, char *argv[])
@@ -443,12 +468,12 @@ int main(int argc, char *argv[])
 		
 		else if (kHeld & KEY_CPAD_DOWN)
 		{
-			svcSleepThread(88888888);
+			svcSleepThread(50000000);
 			MenuSelection++; //Moves the selector down
 		}
 		if (kHeld & KEY_CPAD_UP)
 		{
-			svcSleepThread(88888888);
+			svcSleepThread(50000000);
 			MenuSelection--; //Moves the selector up
 		}
         
