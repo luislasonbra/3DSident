@@ -12,5 +12,6 @@ void getSizeString(char *string, uint64_t size);
 char * base64Encode(u8 const * input);
 bool isN3DS();
 void endDrawing();
+char * base64encode(const char * input);
 
 #endif

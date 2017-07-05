@@ -1,5 +1,7 @@
 #include "mcu.h"
 
+static Handle mcuhwcHandle;
+
 Result mcuInit()
 {
     return srvGetServiceHandle(&mcuhwcHandle, "mcu::HWC");

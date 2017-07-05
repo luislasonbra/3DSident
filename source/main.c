@@ -93,7 +93,7 @@ void batteryMenu()
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Battery status:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%s", batteryStatus());
 	
 	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "Battery voltage:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Battery voltage:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%d (%.1f)", batteryVolt, 5.0 * ((double)batteryVolt / 256.0));
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Battery voltage:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%d (%.1f V)", batteryVolt, 5.0 * ((double)batteryVolt / 256.0));
 	
 	GetMcuFwVerHigh(&mcuFwMajor);
 	GetMcuFwVerLow(&mcuFwMinor);
@@ -313,12 +313,12 @@ void termServices()
 {
 	osSetSpeedupEnable(0);
 	
-	/*sftd_free_font(font_r);
+	sftd_free_font(font_r);
 	sftd_free_font(font_m);
 	
 	sf2d_free_texture(logo);
 	sf2d_free_texture(bottomScreen);
-	sf2d_free_texture(topScreen);*/
+	sf2d_free_texture(topScreen);
 	
 	romfsExit();
 	sftd_fini();
@@ -506,16 +506,16 @@ int main(int argc, char *argv[])
 			storageMenu();
 		else if (MenuSelection == 7)
 			miscMenu();
-		else if ((MenuSelection == 8) && ((kDown & KEY_A) || (kDown & KEY_TOUCH)))
+		
+		endDrawing();
+		
+		if ((MenuSelection == 8) && ((kDown & KEY_A) || (kDown & KEY_TOUCH)))
 		{
-			termServices();
 			break;
 		}
 		
 		if ((kHeld & KEY_L) && (kHeld & KEY_R))
 			captureScreenshot();
-		
-		endDrawing();
 	}
 	
 	termServices();
