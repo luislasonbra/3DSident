@@ -13,10 +13,7 @@
 #include "utils.h"
 
 void kernelMenu()
-{
-	u32 nnidNum = 0xFFFFFFFF;
-	s32 ret;
-	
+{	
 	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Kernel Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Kernel Menu");
 
 	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "Kernel version:");
@@ -33,22 +30,9 @@ void kernelMenu()
 
 	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "NAND CID:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "NAND CID:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%s", nandCID);
-			
-	ret = ACTU_Initialize(0xB0002C8, 0, 0);
-	ret = ACTU_GetAccountDataBlock(0xFE, 4, 12, &nnidNum);
-	if ((nnidNum != 0xFFFFFFFF))
-	{
-		sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "NNID:");
-		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "NNID:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s (%d)", (char*)getNNID(), (int) nnidNum);
-	}
-	else if (ret)
-	{
-		sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "NNID:");
-		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "NNID:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s", (char*)getNNID());
-	}
 	
-	sftd_draw_text(font_r, 20, 216, RGBA8(120, 118, 115, 255), 12, "Device ID:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Device ID:") + 3), 216, RGBA8(67, 72, 66, 255), 12, "%lu", getDeviceId());
+	sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "Device ID:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Device ID:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%lu", getDeviceId());
 }
 
 void systemMenu()
@@ -101,6 +85,44 @@ void batteryMenu()
 	//if (CFG_UNITINFO == 0)
 	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "MCU firmware:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "MCU firmware:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%u.%u", (mcuFwMajor - 16), mcuFwMinor);
+}
+
+void NNIDInfoMenu()
+{	
+	u32 nnidNum = 0xFFFFFFFF;
+	char name[0x16];
+	u16 info[0x16];
+
+	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "NNID Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "NNID Menu");
+	
+	Result ret = ACTU_Initialize(0xB0002C8, 0, 0);
+	ret = ACTU_GetAccountDataBlock(0xFE, 4, 12, &nnidNum);
+	
+	if ((nnidNum != 0xFFFFFFFF))
+	{
+		sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "NNID:");
+		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "NNID:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "%s (%d)", getNNIDInfo(0x11, 0x8), (int) nnidNum);
+	}
+	else if (ret)
+	{
+		sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "NNID:");
+		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "NNID:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x11, 0x8));
+	}
+	
+	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "Country :");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Country :") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x3, 0xB));
+	
+	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "Time Zone:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Time Zone:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x41, 0x1E));
+	
+	ACT_GetAccountInfo(info, 0x16, 0x1B);
+	utf2ascii(name, info);
+	
+	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "Mii name:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Mii name:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%s", name);
+	
+	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "Mii url:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Mii url:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x101, 0x25));
 }
 
 void configInfoMenu()
@@ -382,6 +404,11 @@ int	touchButton(touchPosition *touch, int MenuSelection)
 		svcSleepThread(50000000);
 		MenuSelection = 8;
 	}
+	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 178 && touch->py <= 195)
+	{
+		svcSleepThread(50000000);
+		MenuSelection = 9;
+	}
 	
 	return MenuSelection;
 }
@@ -393,7 +420,7 @@ int main(int argc, char *argv[])
 	int MenuSelection = 1; // Pretty obvious
 	int selector_x = 16; //The x position of the first selection
 	int selector_y = 17; //The y position of the first selection
-	int numMenuItems = 8; //Amount of items in the menu
+	int numMenuItems = 9; //Amount of items in the menu
 	int selector_image_x = 0; //Determines the starting x position of the selection
 	int selector_image_y = 0; //Determines the starting y position of the selection
 	touchPosition touch;
@@ -430,29 +457,34 @@ int main(int argc, char *argv[])
 			sftd_draw_text(font_m, 22, 73, RGBA8(78, 74, 67, 255), 12, "Battery Information");
 		
 		if (MenuSelection == 4)
-			sftd_draw_text(font_m, 22, 91, RGBA8(250, 237, 227, 255), 12, "Config Information");
+			sftd_draw_text(font_m, 22, 91, RGBA8(250, 237, 227, 255), 12, "NNID Information");
 		else
-			sftd_draw_text(font_m, 22, 91, RGBA8(78, 74, 67, 255), 12, "Config Information");
+			sftd_draw_text(font_m, 22, 91, RGBA8(78, 74, 67, 255), 12, "NNID Information");
 		
 		if (MenuSelection == 5)
-			sftd_draw_text(font_m, 22, 109, RGBA8(250, 237, 227, 255), 12, "Hardware Information");
+			sftd_draw_text(font_m, 22, 109, RGBA8(250, 237, 227, 255), 12, "Config Information");
 		else
-			sftd_draw_text(font_m, 22, 109, RGBA8(78, 74, 67, 255), 12, "Hardware Information");
+			sftd_draw_text(font_m, 22, 109, RGBA8(78, 74, 67, 255), 12, "Config Information");
 		
 		if (MenuSelection == 6)
-			sftd_draw_text(font_m, 22, 127, RGBA8(250, 237, 227, 255), 12, "Storage Information");
+			sftd_draw_text(font_m, 22, 127, RGBA8(250, 237, 227, 255), 12, "Hardware Information");
 		else
-			sftd_draw_text(font_m, 22, 127, RGBA8(78, 74, 67, 255), 12, "Storage Information");
+			sftd_draw_text(font_m, 22, 127, RGBA8(78, 74, 67, 255), 12, "Hardware Information");
 		
 		if (MenuSelection == 7)
-			sftd_draw_text(font_m, 22, 145, RGBA8(250, 237, 227, 255), 12, "Miscellaneous");
+			sftd_draw_text(font_m, 22, 145, RGBA8(250, 237, 227, 255), 12, "Storage Information");
 		else
-			sftd_draw_text(font_m, 22, 145, RGBA8(78, 74, 67, 255), 12, "Miscellaneous");
+			sftd_draw_text(font_m, 22, 145, RGBA8(78, 74, 67, 255), 12, "Storage Information");
 		
 		if (MenuSelection == 8)
-			sftd_draw_text(font_m, 22, 163, RGBA8(250, 237, 227, 255), 12, "Exit");
+			sftd_draw_text(font_m, 22, 163, RGBA8(250, 237, 227, 255), 12, "Miscellaneous");
 		else
-			sftd_draw_text(font_m, 22, 163, RGBA8(78, 74, 67, 255), 12, "Exit");
+			sftd_draw_text(font_m, 22, 163, RGBA8(78, 74, 67, 255), 12, "Miscellaneous");
+		
+		if (MenuSelection == 9)
+			sftd_draw_text(font_m, 22, 181, RGBA8(250, 237, 227, 255), 12, "Exit");
+		else
+			sftd_draw_text(font_m, 22, 181, RGBA8(78, 74, 67, 255), 12, "Exit");
 		
 		//Added delay to prevent text from appearing 'glitchy' as you scroll past each section.
 		if (kDown & KEY_DDOWN)
@@ -499,20 +531,20 @@ int main(int argc, char *argv[])
 		else if (MenuSelection == 3)
 			batteryMenu();
 		else if (MenuSelection == 4)
-			configInfoMenu();
+			NNIDInfoMenu();
 		else if (MenuSelection == 5)
-			hardwareMenu();
+			configInfoMenu();
 		else if (MenuSelection == 6)
-			storageMenu();
+			hardwareMenu();
 		else if (MenuSelection == 7)
+			storageMenu();
+		else if (MenuSelection == 8)
 			miscMenu();
 		
 		endDrawing();
 		
-		if ((MenuSelection == 8) && ((kDown & KEY_A) || (kDown & KEY_TOUCH)))
-		{
+		if ((MenuSelection == 9) && ((kDown & KEY_A) || (kDown & KEY_TOUCH)))
 			break;
-		}
 		
 		if ((kHeld & KEY_L) && (kHeld & KEY_R))
 			captureScreenshot();
