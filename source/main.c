@@ -1,7 +1,6 @@
 #include "actu.h"
 #include "am.h"
 #include "cfgs.h"
-#include "clock.h"
 #include "config.h"
 #include "kernel.h"
 #include "main.h"
@@ -122,7 +121,8 @@ void NNIDInfoMenu()
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Mii name:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%s", name);
 	
 	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "Mii url:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Mii url:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x101, 0x25));
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Mii url:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%.54s", getNNIDInfo(0x101, 0x25));
+	sftd_draw_textf(font_r, 20, 195, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x101, 0x25) + + strlen(getNNIDInfo(0x101, 0x25)) - 12);
 }
 
 void configInfoMenu()
@@ -522,7 +522,6 @@ int main(int argc, char *argv[])
 		sf2d_draw_texture(logo, 180, 36);
 		
 		sftd_draw_text(font_m, 5, 1, RGBA8(250, 237, 227, 255), 12, "3DSident v0.7.6");
-		digitalTime();
 		
 		if (MenuSelection == 1)
 			kernelMenu();
@@ -543,7 +542,7 @@ int main(int argc, char *argv[])
 		
 		endDrawing();
 		
-		if ((MenuSelection == 9) && ((kDown & KEY_A) || (kDown & KEY_TOUCH)))
+		if (((MenuSelection == 9) && ((kDown & KEY_A) || (kDown & KEY_TOUCH))) || (kDown & KEY_START))
 			break;
 		
 		if ((kHeld & KEY_L) && (kHeld & KEY_R))
