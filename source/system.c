@@ -190,7 +190,7 @@ char * getNNIDInfo(u32 size, u32 blkId)
     char info[size];
 	static char str[100];
 	
-    ACT_GetAccountInfo(info, size, blkId);
+    ACTU_GetAccountDataBlock(info, size, blkId);
 	snprintf(str, size, "%s", info);
 	
     return str;

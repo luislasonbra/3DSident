@@ -62,7 +62,7 @@ void systemMenu()
 
 void batteryMenu()
 {
-	u8 batteryPercent, batteryVolt, mcuFwMajor, mcuFwMinor;
+	u8 batteryPercent = 0, batteryVolt = 0, mcuFwMajor = 0, mcuFwMinor = 0;
 	
 	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Battery Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Battery Menu");
 	
@@ -80,7 +80,6 @@ void batteryMenu()
 	
 	GetMcuFwVerHigh(&mcuFwMajor);
 	GetMcuFwVerLow(&mcuFwMinor);
-	
 	//if (CFG_UNITINFO == 0)
 	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "MCU firmware:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "MCU firmware:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%u.%u", (mcuFwMajor - 16), mcuFwMinor);
@@ -88,41 +87,42 @@ void batteryMenu()
 
 void NNIDInfoMenu()
 {	
-	u32 nnidNum = 0xFFFFFFFF;
+	u32 principalID = 0, persistentID = 0;
+	u64 transferableID = 0;
 	char name[0x16];
 	u16 info[0x16];
 
 	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "NNID Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "NNID Menu");
 	
-	Result ret = ACTU_Initialize(0xB0002C8, 0, 0);
-	ret = ACTU_GetAccountDataBlock(0xFE, 4, 12, &nnidNum);
+	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "NNID:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "NNID:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x11, 0x8));
 	
-	if ((nnidNum != 0xFFFFFFFF))
-	{
-		sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "NNID:");
-		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "NNID:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "%s (%d)", getNNIDInfo(0x11, 0x8), (int) nnidNum);
-	}
-	else if (ret)
-	{
-		sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "NNID:");
-		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "NNID:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x11, 0x8));
-	}
-	
-	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "Country :");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Country :") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x3, 0xB));
-	
-	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "Time Zone:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Time Zone:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x41, 0x1E));
-	
-	ACT_GetAccountInfo(info, 0x16, 0x1B);
+	ACTU_GetAccountDataBlock(info, 0x16, 0x1B);
 	utf2ascii(name, info);
+	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "Mii name:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Mii name:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%s", name);
 	
-	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "Mii name:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Mii name:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%s", name);
+	ACTU_GetAccountDataBlock(&principalID, 0x4, 0xC);
+	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "Principal ID:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Principal ID:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%u", principalID);
 	
-	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "Mii url:");
+	ACTU_GetAccountDataBlock(&persistentID, 0x4, 0x5);
+	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "Persistent ID:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Persistent ID:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%u", persistentID);
+	
+	ACTU_GetAccountDataBlock(&transferableID, 0x8, 0x6);
+	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "Transferable ID Base:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Transferable ID Base:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%llu", (int)transferableID);
+	
+	sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "Country :");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Country :") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x3, 0xB));
+	
+	sftd_draw_text(font_r, 20, 216, RGBA8(120, 118, 115, 255), 12, "Time Zone:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Time Zone:") + 3), 216, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x41, 0x1E));
+	
+	/*sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "Mii url:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Mii url:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%.54s", getNNIDInfo(0x101, 0x25));
-	sftd_draw_textf(font_r, 20, 195, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x101, 0x25) + + strlen(getNNIDInfo(0x101, 0x25)) - 12);
+	sftd_draw_textf(font_r, 20, 195, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x101, 0x25) + + strlen(getNNIDInfo(0x101, 0x25)) - 12);*/
 }
 
 void configInfoMenu()
@@ -301,7 +301,6 @@ void initServices()
 	psInit();
 	aptInit();
 	hidInit();
-	actuInit();
 	actInit(SDK(11,2,0,200), 0x20000);
 	httpcInit(0x9000);
 	romfsInit();
@@ -347,7 +346,6 @@ void termServices()
 	sf2d_fini();
 	httpcExit();
 	actExit();
-	actuExit();
 	hidExit();
 	aptExit();
 	psExit();
