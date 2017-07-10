@@ -302,7 +302,8 @@ void initServices()
 	aptInit();
 	hidInit();
 	actInit(SDK(11,2,0,200), 0x20000);
-	httpcInit(0x9000);
+	//httpcInit(0x9000);
+	socInit((u32*)memalign(0x1000, 0x10000), 0x10000);
 	romfsInit();
 	sf2d_init();
 	sftd_init();
@@ -344,7 +345,8 @@ void termServices()
 	romfsExit();
 	sftd_fini();
 	sf2d_fini();
-	httpcExit();
+	//httpcExit();
+    socExit();
 	actExit();
 	hidExit();
 	aptExit();

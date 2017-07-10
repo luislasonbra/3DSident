@@ -232,6 +232,7 @@ AccessControlInfo:
    - mcu::HWC
    - ndm:u
    - news:s
+   - nim:u
    - nwm::EXT
    - nwm::UDS
    - ps:ps
