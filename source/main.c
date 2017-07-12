@@ -259,7 +259,7 @@ void miscMenu()
 	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Miscellaneous")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Miscellaneous");
 	
 	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "Installed titles:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Installed titles:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "SD: %i (NAND: %i)", (int)titleCount(MEDIATYPE_SD), (int)titleCount(MEDIATYPE_NAND));
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Installed titles:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "SD: %lu (NAND: %lu)", titleCount(MEDIATYPE_SD), titleCount(MEDIATYPE_NAND));
 	
 	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "WiFi signal strength:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi signal strength:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%d (%.0lf%%)", osGetWifiStrength(), wifiPercent);
@@ -301,8 +301,7 @@ void initServices()
 	psInit();
 	aptInit();
 	hidInit();
-	actInit(SDK(11,2,0,200), 0x20000);
-	//httpcInit(0x9000);
+	actInit(SDK(11, 2, 0, 200), 0x20000);
 	socInit((u32*)memalign(0x1000, 0x10000), 0x10000);
 	romfsInit();
 	sf2d_init();
@@ -342,10 +341,9 @@ void termServices()
 	sf2d_free_texture(bottomScreen);
 	sf2d_free_texture(topScreen);
 	
-	romfsExit();
 	sftd_fini();
 	sf2d_fini();
-	//httpcExit();
+	romfsExit();
     socExit();
 	actExit();
 	hidExit();
