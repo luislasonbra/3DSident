@@ -305,12 +305,13 @@ void initServices()
 	hidInit();
 	actInit(SDK(11, 2, 0, 200), 0x20000);
 	socInit((u32*)memalign(0x1000, 0x10000), 0x10000);
-	romfsInit();
-	sf2d_init();
-	sftd_init();
 	
+	sf2d_init();
 	sf2d_set_clear_color(RGBA8(0, 0, 0, 255));
-	sf2d_set_vblank_wait(0);
+	sf2d_set_vblank_wait(1);
+	
+	sftd_init();
+	romfsInit();
 	
 	topScreen = sfil_load_PNG_file("romfs:/res/topScreen.png", SF2D_PLACE_RAM); setBilinearFilter(topScreen);
 	bottomScreen = sfil_load_PNG_file("romfs:/res/bottomScreen.png", SF2D_PLACE_RAM); setBilinearFilter(bottomScreen);
@@ -344,8 +345,8 @@ void termServices()
 	sf2d_free_texture(topScreen);
 	
 	sftd_fini();
-	sf2d_fini();
 	romfsExit();
+	sf2d_fini();
     socExit();
 	actExit();
 	hidExit();
@@ -367,50 +368,23 @@ void termServices()
 int	touchButton(touchPosition *touch, int MenuSelection)
 {
 	if (touch->px >= 15 && touch->px <= 300 && touch->py >= 37 && touch->py <= 56)
-	{
-		svcSleepThread(50000000);
 		MenuSelection = 1;
-	}
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 56 && touch->py <= 73)
-	{
-		svcSleepThread(50000000);
 		MenuSelection = 2;
-	}
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 73 && touch->py <= 92)
-	{
-		svcSleepThread(50000000);
 		MenuSelection = 3;
-	}
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 92 && touch->py <= 110)
-	{
-		svcSleepThread(50000000);
 		MenuSelection = 4;
-	}
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 110 && touch->py <= 127)
-	{
-		svcSleepThread(50000000);
 		MenuSelection = 5;
-	}
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 127 && touch->py <= 144)
-	{
-		svcSleepThread(50000000);
 		MenuSelection = 6;
-	}
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 144 && touch->py <= 161)
-	{
-		svcSleepThread(50000000);
 		MenuSelection = 7;
-	}
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 161 && touch->py <= 178)
-	{
-		svcSleepThread(50000000);
 		MenuSelection = 8;
-	}
-	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 178 && touch->py <= 195)
-	{
-		svcSleepThread(50000000);
+	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 178 && touch->py <= 195)	
 		MenuSelection = 9;
-	}
 	
 	return MenuSelection;
 }
