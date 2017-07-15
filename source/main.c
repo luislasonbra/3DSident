@@ -64,6 +64,7 @@ void systemMenu()
 void batteryMenu()
 {
 	u8 batteryPercent = 0, batteryVolt = 0, mcuFwMajor = 0, mcuFwMinor = 0;
+	bool isConnected = false;
 	
 	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Battery Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Battery Menu");
 	
@@ -79,11 +80,15 @@ void batteryMenu()
 	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "Battery voltage:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Battery voltage:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%d (%.1f V)", batteryVolt, 5.0 * ((double)batteryVolt / 256.0));
 	
+	PTMU_GetAdapterState(&isConnected);
+	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "Adapter state:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Adapter state:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%s", isConnected? "connected" : "disconnected");
+	
 	GetMcuFwVerHigh(&mcuFwMajor);
 	GetMcuFwVerLow(&mcuFwMinor);
 	//if (CFG_UNITINFO == 0)
-	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "MCU firmware:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "MCU firmware:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%u.%u", (mcuFwMajor - 16), mcuFwMinor);
+	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "MCU firmware:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "MCU firmware:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%u.%u", (mcuFwMajor - 16), mcuFwMinor);
 }
 
 void NNIDInfoMenu()
