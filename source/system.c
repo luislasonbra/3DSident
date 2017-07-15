@@ -1,7 +1,6 @@
 #include "actu.h"
 #include "am.h"
 #include "cfgs.h"
-#include "gsplcd.h"
 #include "system.h"
 #include "utils.h"
 
@@ -182,7 +181,7 @@ char * getDeviceCert(void)
 {
     u8 const cert[0x180];
     amNetGetDeviceCert(cert);
-    return base64Encode(cert);
+    return base64Encode(cert, 0x180);
 }
 
 char * getNNIDInfo(u32 size, u32 blkId)

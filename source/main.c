@@ -2,6 +2,7 @@
 #include "am.h"
 #include "cfgs.h"
 #include "config.h"
+#include "fs.h"
 #include "kernel.h"
 #include "main.h"
 #include "mcu.h"
@@ -276,15 +277,15 @@ void miscMenu()
 	{
 		sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "CPU clock frequency:");
 		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "CPU clock frequency:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%u MHz", clkRate != 268 ? (u32)higherClkRate : 268);
+		
+		sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "L2 Cache:");
+		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "L2 Cache:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%s", L2CacheEnabled ? "enabled" : "disabled");
 	}
 	else 
 	{
 		sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "CPU clock frequency:");
-		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "CPU clock frequency:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%u MHz", clkRate);
-	}
-	
-	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "L2 Cache:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "L2 Cache:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%s", L2CacheEnabled ? "enabled" : "disabled");
+		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "CPU clock frequency:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "268 MHz");
+	}	
 }
 
 void initServices()
@@ -294,9 +295,10 @@ void initServices()
 	cfgsInit();
 	fsInit();
 	sdmcInit();
+	openArchive(ARCHIVE_SDMC);
 	ptmuInit();
 	mcuInit();
-	amInit();
+    amInit(); 
 	amAppInit();
 	psInit();
 	aptInit();
@@ -350,9 +352,11 @@ void termServices()
 	aptExit();
 	psExit();
 	acExit();
-	amExit();
+    amExit();
+	httpcExit();
 	mcuExit();
 	ptmuExit();
+	closeArchive();
 	sdmcExit();
 	fsExit();
 	cfgsExit();
