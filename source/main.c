@@ -298,7 +298,7 @@ void initServices()
 	openArchive(ARCHIVE_SDMC);
 	ptmuInit();
 	mcuInit();
-    amInit(); 
+	amInit(); 
 	amAppInit();
 	psInit();
 	aptInit();
@@ -352,7 +352,7 @@ void termServices()
 	aptExit();
 	psExit();
 	acExit();
-    amExit();
+	amExit();
 	httpcExit();
 	mcuExit();
 	ptmuExit();
