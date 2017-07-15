@@ -490,22 +490,16 @@ int main(int argc, char *argv[])
 		
 		//Added delay to prevent text from appearing 'glitchy' as you scroll past each section.
 		if (kDown & KEY_DDOWN)
-		{
-			svcSleepThread(100000000);
 			MenuSelection++; //Moves the selector down
-		}	
 		else if (kDown & KEY_DUP)
-		{
-			svcSleepThread(100000000);
 			MenuSelection--; //Moves the selector up
-		}
 		
-		else if (kHeld & KEY_CPAD_DOWN)
+		if (kHeld & KEY_CPAD_DOWN)
 		{
 			svcSleepThread(50000000);
 			MenuSelection++; //Moves the selector down
 		}
-		if (kHeld & KEY_CPAD_UP)
+		else if (kHeld & KEY_CPAD_UP)
 		{
 			svcSleepThread(50000000);
 			MenuSelection--; //Moves the selector up
