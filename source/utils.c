@@ -19,7 +19,7 @@ void getSizeString(char *string, uint64_t size) //Thanks TheOfficialFloW
 	sprintf(string, "%.*f %s", (i == 0) ? 0 : 2, double_size, units[i]);
 }
 
-bool isN3DS()
+bool isN3DS(void)
 {
 	bool isNew3DS = 0;
 	APT_CheckNew3DS(&isNew3DS);
@@ -30,7 +30,7 @@ bool isN3DS()
 		return false;
 }
 
-void endDrawing()
+void endDrawing(void)
 {
 	sf2d_end_frame();
 	sf2d_swapbuffers();

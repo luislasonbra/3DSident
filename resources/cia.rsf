@@ -218,6 +218,7 @@ AccessControlInfo:
    - cecd:u
    - cfg:nor
    - cfg:u
+   - cfg:i
    - cfg:s
    - csnd:SND
    - dsp::DSP

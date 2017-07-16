@@ -11,8 +11,9 @@
 #include "screenshot.h"
 #include "system.h"
 #include "utils.h"
+#include "wifi.h"
 
-void kernelMenu()
+void kernelMenu(void)
 {	
 	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Kernel Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Kernel Menu");
 
@@ -35,7 +36,7 @@ void kernelMenu()
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Device ID:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%lu", getDeviceId());
 }
 
-void systemMenu()
+void systemMenu(void)
 {
 	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "System Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "System Menu");
 	
@@ -61,7 +62,7 @@ void systemMenu()
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Screen type:") + 3), 216, RGBA8(67, 72, 66, 255), 12, "%s", getScreenType());
 }
 
-void batteryMenu()
+void batteryMenu(void)
 {
 	u8 batteryPercent = 0, batteryVolt = 0, mcuFwMajor = 0, mcuFwMinor = 0;
 	bool isConnected = false;
@@ -91,7 +92,7 @@ void batteryMenu()
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "MCU firmware:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%u.%u", (mcuFwMajor - 16), mcuFwMinor);
 }
 
-void NNIDInfoMenu()
+void NNIDInfoMenu(void)
 {	
 	u32 principalID = 0, persistentID = 0;
 	u64 transferableID = 0;
@@ -131,7 +132,7 @@ void NNIDInfoMenu()
 	sftd_draw_textf(font_r, 20, 195, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x101, 0x25) + + strlen(getNNIDInfo(0x101, 0x25)) - 12);*/
 }
 
-void configInfoMenu()
+void configInfoMenu(void)
 {	
 	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Config Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Config Menu");
 	
@@ -145,7 +146,7 @@ void configInfoMenu()
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "EULA version:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%s", getEulaVersion());
 }
 
-void hardwareMenu()
+void hardwareMenu(void)
 {
 	bool hpInserted = false;
 	u8 volume = 0;
@@ -175,7 +176,7 @@ void hardwareMenu()
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Brightness:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s", getBrightness(1));
 }
 
-void storageMenu()
+void storageMenu(void)
 {
 	u64 sdUsed = 0, sdTotal = 0, ctrUsed = 0, ctrTotal = 0, twlUsed = 0, twlTotal = 0, twlpUsed = 0, twlpTotal = 0; 
 	
@@ -256,10 +257,8 @@ void storageMenu()
 	sftd_draw_textf(font_r, (285 + sftd_get_text_width(font_r, 12, "Total:") + 3), 193, RGBA8(67, 72, 66, 255), 12, "%s", twlpTotalSize);
 }
 
-void miscMenu()
-{
-	s64 clkRate = 0, higherClkRate = 0, L2CacheEnabled = 0;
-	
+void miscMenu(void)
+{	
 	double wifiPercent = (osGetWifiStrength() * 33.3333333333);
 	
 	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Miscellaneous")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Miscellaneous");
@@ -267,33 +266,53 @@ void miscMenu()
 	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "Installed titles:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Installed titles:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "SD: %lu (NAND: %lu)", titleCount(MEDIATYPE_SD), titleCount(MEDIATYPE_NAND));
 	
-	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "WiFi signal strength:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi signal strength:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%d (%.0lf%%)", osGetWifiStrength(), wifiPercent);
+	u64 homemenuID = 0;
+	Result ret = APT_GetAppletInfo(APPID_HOMEMENU, &homemenuID, NULL, NULL, NULL, NULL);
+	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "Homemenu ID:");
+	if(ret == 0)
+		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Homemenu ID:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%016llX", homemenuID);
+	
+	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "WiFi signal strength:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi signal strength:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%d (%.0lf%%)", osGetWifiStrength(), wifiPercent);
 	
 	u32 ip = gethostid();
-	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "IP:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "IP:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%lu.%lu.%lu.%lu", ip & 0xFF, (ip>>8)&0xFF, (ip>>16)&0xFF, (ip>>24)&0xFF);
+	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "IP:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "IP:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%lu.%lu.%lu.%lu", ip & 0xFF, (ip>>8)&0xFF, (ip>>16)&0xFF, (ip>>24)&0xFF);
 	
-	svcGetSystemInfo(&clkRate, 0x10001, 0);
-    svcGetSystemInfo(&higherClkRate, 0x10001, 1);
-    svcGetSystemInfo(&L2CacheEnabled, 0x10001, 2);
+	wifiBlock slotData;
 	
-	if (isN3DS())
+	Result wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 0, (u8*)&slotData);
+	if ((!wifiRet) && (slotData.exists))
 	{
-		sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "CPU clock frequency:");
-		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "CPU clock frequency:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%u MHz", clkRate != 268 ? (u32)higherClkRate : 268);
-		
-		sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "L2 Cache:");
-		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "L2 Cache:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%s", L2CacheEnabled ? "enabled" : "disabled");
+		sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "WiFi Slot 1:");
+		if (slotData.network.use) 
+			sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi Slot 1:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "SSID: %s (pass: %s)", slotData.network.SSID, slotData.network.password);
+		else if (slotData.network_WPS.use) 
+			sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi Slot 1:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "SSID: %s (pass: %s)", slotData.network_WPS.SSID, slotData.network_WPS.password);
 	}
-	else 
+	
+	wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 1, (u8*)&slotData);
+	if ((!wifiRet) && (slotData.exists))
 	{
-		sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "CPU clock frequency:");
-		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "CPU clock frequency:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "268 MHz");
-	}	
+		sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "WiFi Slot 2:");
+		if (slotData.network.use) 
+			sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi Slot 2:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "SSID: %s (pass: %s)", slotData.network.SSID, slotData.network.password);
+		else if (slotData.network_WPS.use) 
+			sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi Slot 2:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "SSID: %s (pass: %s)", slotData.network_WPS.SSID, slotData.network_WPS.password);
+	}
+	
+	wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 2, (u8*)&slotData);
+	if ((!wifiRet) && (slotData.exists))
+	{
+		sftd_draw_text(font_r, 20, 216, RGBA8(120, 118, 115, 255), 12, "WiFi Slot 3:");
+		if (slotData.network.use) 
+			sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi Slot 3:") + 3), 216, RGBA8(67, 72, 66, 255), 12, "SSID: %s (pass: %s)", slotData.network.SSID, slotData.network.password);
+		else if (slotData.network_WPS.use) 
+			sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi Slot 3:") + 3), 216, RGBA8(67, 72, 66, 255), 12, "SSID: %s (pass: %s)", slotData.network_WPS.SSID, slotData.network_WPS.password);
+	}
 }
 
-void initServices()
+void initServices(void)
 {
 	dspInit();
 	cfguInit();
@@ -338,7 +357,7 @@ void initServices()
 	strcpy(birthday, getBirthday());
 }
 
-void termServices()
+void termServices(void)
 {
 	osSetSpeedupEnable(0);
 	

@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-const char * getUsername();
-char * getBirthday();
-char * getEulaVersion();
+const char * getUsername(void);
+char * getBirthday(void);
+char * getEulaVersion(void);
 
 #endif
