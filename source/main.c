@@ -121,8 +121,8 @@ void NNIDInfoMenu(void)
 	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "Transferable ID Base:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Transferable ID Base:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%llu", (int)transferableID);
 	
-	sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "Country :");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Country :") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x3, 0xB));
+	sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "Country:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Country:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x3, 0xB));
 	
 	sftd_draw_text(font_r, 20, 216, RGBA8(120, 118, 115, 255), 12, "Time Zone:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Time Zone:") + 3), 216, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x41, 0x1E));
@@ -143,7 +143,13 @@ void configInfoMenu(void)
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Birthday:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%s", birthday);
 	
 	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "EULA version:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "EULA version:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%s", getEulaVersion());
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "EULA version:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%s", eulaVer);
+	
+	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "Parental control pin:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Parental control pin:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%s", pin);
+	
+	/*sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "Debug mode:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Debug mode:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%s", isDebugModeEnabled()? "enabled" : "disabled");*/
 }
 
 void hardwareMenu(void)
@@ -348,13 +354,17 @@ void initServices(void)
 	if (isN3DS())
 		osSetSpeedupEnable(true);
 	
+	// Simply because I don't want the following constantly being checked for in a while loop.
+	
 	strcpy(kernerlVersion, getVersion(0));
 	strcpy(firmVersion, getVersion(1));
 	strcpy(systemVersion, getVersion(2));
-	strcpy(sdmcCID, getCID(0));
-	strcpy(nandCID, getCID(1));
-	strcpy(username, getUsername());
-	strcpy(birthday, getBirthday());
+	strncpy(sdmcCID, getCID(0), 33);
+	strncpy(nandCID, getCID(1), 33);
+	strncpy(username, getUsername(), 15);
+	strncpy(birthday, getBirthday(), 6);
+	strncpy(eulaVer, getEulaVersion(), 6);
+	strncpy(pin, getParentalPin(), 6);
 }
 
 void termServices(void)

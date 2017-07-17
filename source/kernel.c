@@ -47,7 +47,7 @@ char * getVersion(int version)
 char * getCID(int type)
 {
 	u8 buf[16];
-	static char cid[32];
+	static char cid[33];
 	
 	if (type == 0) //SDMC
 		FSUSER_GetSdmcCid(buf, 0x10);

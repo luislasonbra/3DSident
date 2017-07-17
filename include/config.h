@@ -9,5 +9,7 @@
 const char * getUsername(void);
 char * getBirthday(void);
 char * getEulaVersion(void);
+char * getParentalPin(void);
+bool isDebugModeEnabled(void);
 
 #endif
