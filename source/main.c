@@ -182,6 +182,73 @@ void hardwareMenu(void)
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Brightness:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s", getBrightness(1));
 }
 
+void wifiMenu(void)
+{
+	sf2d_draw_rectangle(0, 19, 400, 221, RGBA8(242, 241, 239, 255));
+	
+	wifiSlotStructure slotData;
+	
+	Result wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 0, (u8*)&slotData);
+	if ((!wifiRet) && (slotData.set))
+	{
+		sf2d_draw_rectangle(15, 27, 370, 70, RGBA8(180, 180, 178, 255));
+		sf2d_draw_rectangle(16, 28, 368, 68, RGBA8(255, 255, 253, 255));
+		
+		sftd_draw_text(font_r, 20, 30, RGBA8(120, 118, 115, 255), 12, "WiFi Slot 1:");
+		if (slotData.network.use) 
+		{
+			sftd_draw_textf(font_r, 20, 46, RGBA8(67, 72, 66, 255), 12, "SSID: %s", slotData.network.SSID);
+			sftd_draw_textf(font_r, 20, 62, RGBA8(67, 72, 66, 255), 12, "Pass: %s", slotData.network.passphrase);
+		}
+		else if (slotData.network_WPS.use) 
+		{
+			sftd_draw_textf(font_r, 20, 46, RGBA8(67, 72, 66, 255), 12, "SSID: %s", slotData.network_WPS.SSID);
+			sftd_draw_textf(font_r, 20, 62, RGBA8(67, 72, 66, 255), 12, "Pass: %s", slotData.network_WPS.passphrase);
+		}
+		sftd_draw_textf(font_r, 20, 78, RGBA8(67, 72, 66, 255), 12, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
+	}
+	
+	wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 1, (u8*)&slotData);
+	if ((!wifiRet) && (slotData.set))
+	{
+		sf2d_draw_rectangle(15, 95, 370, 70, RGBA8(180, 180, 178, 255));
+		sf2d_draw_rectangle(16, 96, 368, 68, RGBA8(255, 255, 253, 255));
+		
+		sftd_draw_text(font_r, 20, 98, RGBA8(120, 118, 115, 255), 12, "WiFi Slot 2:");
+		if (slotData.network.use) 
+		{
+			sftd_draw_textf(font_r, 20, 114, RGBA8(67, 72, 66, 255), 12, "SSID: %s", slotData.network.SSID);
+			sftd_draw_textf(font_r, 20, 130, RGBA8(67, 72, 66, 255), 12, "Pass: %s", slotData.network.passphrase);
+		}
+		else if (slotData.network_WPS.use) 
+		{
+			sftd_draw_textf(font_r, 20, 114, RGBA8(67, 72, 66, 255), 12, "SSID: %s", slotData.network_WPS.SSID);
+			sftd_draw_textf(font_r, 20, 130, RGBA8(67, 72, 66, 255), 12, "Pass: %s", slotData.network_WPS.passphrase);
+		}
+		sftd_draw_textf(font_r, 20, 146, RGBA8(67, 72, 66, 255), 12, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
+	}
+	
+	wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 2, (u8*)&slotData);
+	if ((!wifiRet) && (slotData.set))
+	{
+		sf2d_draw_rectangle(15, 163, 370, 70, RGBA8(180, 180, 178, 255));
+		sf2d_draw_rectangle(16, 164, 368, 68, RGBA8(255, 255, 253, 255));
+		
+		sftd_draw_text(font_r, 20, 166, RGBA8(120, 118, 115, 255), 12, "WiFi Slot 3:");
+		if (slotData.network.use) 
+		{
+			sftd_draw_textf(font_r, 20, 182, RGBA8(67, 72, 66, 255), 12, "SSID: %s", slotData.network.SSID);
+			sftd_draw_textf(font_r, 20, 198, RGBA8(67, 72, 66, 255), 12, "Pass: %s", slotData.network.passphrase);
+		}
+		else if (slotData.network_WPS.use) 
+		{
+			sftd_draw_textf(font_r, 20, 182, RGBA8(67, 72, 66, 255), 12, "SSID: %s", slotData.network_WPS.SSID);
+			sftd_draw_textf(font_r, 20, 198, RGBA8(67, 72, 66, 255), 12, "Pass: %s", slotData.network_WPS.passphrase);
+		}
+		sftd_draw_textf(font_r, 20, 214, RGBA8(67, 72, 66, 255), 12, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
+	}
+}
+
 void storageMenu(void)
 {
 	u64 sdUsed = 0, sdTotal = 0, ctrUsed = 0, ctrTotal = 0, twlUsed = 0, twlTotal = 0, twlpUsed = 0, twlpTotal = 0; 
@@ -284,38 +351,6 @@ void miscMenu(void)
 	u32 ip = gethostid();
 	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "IP:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "IP:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%lu.%lu.%lu.%lu", ip & 0xFF, (ip>>8)&0xFF, (ip>>16)&0xFF, (ip>>24)&0xFF);
-	
-	wifiBlock slotData;
-	
-	Result wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 0, (u8*)&slotData);
-	if ((!wifiRet) && (slotData.exists))
-	{
-		sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "WiFi Slot 1:");
-		if (slotData.network.use) 
-			sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi Slot 1:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "SSID: %s (pass: %s)", slotData.network.SSID, slotData.network.password);
-		else if (slotData.network_WPS.use) 
-			sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi Slot 1:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "SSID: %s (pass: %s)", slotData.network_WPS.SSID, slotData.network_WPS.password);
-	}
-	
-	wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 1, (u8*)&slotData);
-	if ((!wifiRet) && (slotData.exists))
-	{
-		sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "WiFi Slot 2:");
-		if (slotData.network.use) 
-			sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi Slot 2:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "SSID: %s (pass: %s)", slotData.network.SSID, slotData.network.password);
-		else if (slotData.network_WPS.use) 
-			sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi Slot 2:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "SSID: %s (pass: %s)", slotData.network_WPS.SSID, slotData.network_WPS.password);
-	}
-	
-	wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 2, (u8*)&slotData);
-	if ((!wifiRet) && (slotData.exists))
-	{
-		sftd_draw_text(font_r, 20, 216, RGBA8(120, 118, 115, 255), 12, "WiFi Slot 3:");
-		if (slotData.network.use) 
-			sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi Slot 3:") + 3), 216, RGBA8(67, 72, 66, 255), 12, "SSID: %s (pass: %s)", slotData.network.SSID, slotData.network.password);
-		else if (slotData.network_WPS.use) 
-			sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi Slot 3:") + 3), 216, RGBA8(67, 72, 66, 255), 12, "SSID: %s (pass: %s)", slotData.network_WPS.SSID, slotData.network_WPS.password);
-	}
 }
 
 void initServices(void)
@@ -419,6 +454,8 @@ int	touchButton(touchPosition *touch, int MenuSelection)
 		MenuSelection = 8;
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 178 && touch->py <= 195)	
 		MenuSelection = 9;
+	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 195 && touch->py <= 212)	
+		MenuSelection = 10;
 	
 	return MenuSelection;
 }
@@ -430,7 +467,7 @@ int main(int argc, char *argv[])
 	int MenuSelection = 1; // Pretty obvious
 	int selector_x = 16; //The x position of the first selection
 	int selector_y = 17; //The y position of the first selection
-	int numMenuItems = 9; //Amount of items in the menu
+	int numMenuItems = 10; //Amount of items in the menu
 	int selector_image_x = 0; //Determines the starting x position of the selection
 	int selector_image_y = 0; //Determines the starting y position of the selection
 	touchPosition touch;
@@ -482,19 +519,24 @@ int main(int argc, char *argv[])
 			sftd_draw_text(font_m, 22, 127, RGBA8(78, 74, 67, 255), 12, "Hardware Information");
 		
 		if (MenuSelection == 7)
-			sftd_draw_text(font_m, 22, 145, RGBA8(250, 237, 227, 255), 12, "Storage Information");
+			sftd_draw_text(font_m, 22, 145, RGBA8(250, 237, 227, 255), 12, "WiFi Information");
 		else
-			sftd_draw_text(font_m, 22, 145, RGBA8(78, 74, 67, 255), 12, "Storage Information");
+			sftd_draw_text(font_m, 22, 145, RGBA8(78, 74, 67, 255), 12, "WiFi Information");
 		
 		if (MenuSelection == 8)
-			sftd_draw_text(font_m, 22, 163, RGBA8(250, 237, 227, 255), 12, "Miscellaneous");
+			sftd_draw_text(font_m, 22, 163, RGBA8(250, 237, 227, 255), 12, "Storage Information");
 		else
-			sftd_draw_text(font_m, 22, 163, RGBA8(78, 74, 67, 255), 12, "Miscellaneous");
+			sftd_draw_text(font_m, 22, 163, RGBA8(78, 74, 67, 255), 12, "Storage Information");
 		
 		if (MenuSelection == 9)
-			sftd_draw_text(font_m, 22, 181, RGBA8(250, 237, 227, 255), 12, "Exit");
+			sftd_draw_text(font_m, 22, 181, RGBA8(250, 237, 227, 255), 12, "Miscellaneous");
 		else
-			sftd_draw_text(font_m, 22, 181, RGBA8(78, 74, 67, 255), 12, "Exit");
+			sftd_draw_text(font_m, 22, 181, RGBA8(78, 74, 67, 255), 12, "Miscellaneous");
+		
+		if (MenuSelection == 10)
+			sftd_draw_text(font_m, 22, 199, RGBA8(250, 237, 227, 255), 12, "Exit");
+		else
+			sftd_draw_text(font_m, 22, 199, RGBA8(78, 74, 67, 255), 12, "Exit");
 		
 		//Added delay to prevent text from appearing 'glitchy' as you scroll past each section.
 		if (kDown & KEY_DDOWN)
@@ -540,13 +582,15 @@ int main(int argc, char *argv[])
 		else if (MenuSelection == 6)
 			hardwareMenu();
 		else if (MenuSelection == 7)
-			storageMenu();
+			wifiMenu();
 		else if (MenuSelection == 8)
+			storageMenu();
+		else if (MenuSelection == 9)
 			miscMenu();
 		
 		endDrawing();
 		
-		if (((MenuSelection == 9) && ((kDown & KEY_A) || (kDown & KEY_TOUCH))) || (kDown & KEY_START))
+		if (((MenuSelection == 10) && ((kDown & KEY_A) || (kDown & KEY_TOUCH))) || (kDown & KEY_START))
 			break;
 		
 		if ((kHeld & KEY_L) && (kHeld & KEY_R))

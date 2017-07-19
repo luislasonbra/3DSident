@@ -1,4 +1,3 @@
-#include "actu.h"
 #include "kernel.h"
 #include "system.h"
 
@@ -15,7 +14,7 @@ char * getVersion(int version)
 			GET_VERSION_REVISION(os_ver)
 	);
 	
-	snprintf(str_ver, 255, "%lu.%lu-%lu\n",
+	snprintf(str_ver, 255, "%lu.%lu-%lu",
 			GET_VERSION_MAJOR(firm_ver),
 			GET_VERSION_MINOR(firm_ver),
 			GET_VERSION_REVISION(firm_ver)
