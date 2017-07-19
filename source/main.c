@@ -94,18 +94,19 @@ void batteryMenu(void)
 
 void NNIDInfoMenu(void)
 {	
-	u32 principalID = 0, persistentID = 0;
-	u64 transferableID = 0;
+	u32 principalID = 0;
 	char name[0x16];
-	u16 info[0x16];
+	
+	AccountDataBlock accountDataBlock;
+	ACTU_GetAccountDataBlock((u8*)&accountDataBlock, 0xA0, 0x11);
 
 	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "NNID Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "NNID Menu");
 	
+	// getNNIDInfo(0x11, 0x8), getNNIDInfo(0x11, 0x1C), getNNIDInfo(0x11, 0x15) are all the same.
 	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "NNID:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "NNID:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x11, 0x8));
-	
-	ACTU_GetAccountDataBlock(info, 0x16, 0x1B);
-	utf2ascii(name, info);
+
+	utf2ascii(name, accountDataBlock.miiName);
 	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "Mii name:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Mii name:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%s", name);
 	
@@ -113,13 +114,11 @@ void NNIDInfoMenu(void)
 	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "Principal ID:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Principal ID:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%u", principalID);
 	
-	ACTU_GetAccountDataBlock(&persistentID, 0x4, 0x5);
 	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "Persistent ID:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Persistent ID:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%u", persistentID);
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Persistent ID:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%u", accountDataBlock.persistentID);
 	
-	ACTU_GetAccountDataBlock(&transferableID, 0x8, 0x6);
 	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "Transferable ID Base:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Transferable ID Base:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%llu", (int)transferableID);
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Transferable ID Base:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%llu", accountDataBlock.transferableID);
 	
 	sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "Country:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Country:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x3, 0xB));
