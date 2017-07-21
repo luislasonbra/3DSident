@@ -133,7 +133,7 @@ void NNIDInfoMenu(void)
 
 void configInfoMenu(void)
 {
-	u8 answer[0x20] = {0};
+	u8 answer[0x21] = {0};
 	
 	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Config Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Config Menu");
 	
@@ -154,7 +154,11 @@ void configInfoMenu(void)
 	
 	getParentalSecretAnswer(answer);
 	sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "Parental control answer:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Parental control answer:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s\n", answer + 1);
+	
+	if (!answer[0])
+		sftd_draw_text(font_r, (20 + sftd_get_text_width(font_r, 12, "Parental control answer:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "(null)");
+	else
+		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Parental control answer:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s\n", answer + 1);
 	
 	/*sftd_draw_text(font_r, 20, 216, RGBA8(120, 118, 115, 255), 12, "Debug mode:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Debug mode:") + 3), 216, RGBA8(67, 72, 66, 255), 12, "%s", isDebugModeEnabled()? "enabled" : "disabled");*/
@@ -345,7 +349,7 @@ void miscMenu(void)
 	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Miscellaneous")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Miscellaneous");
 	
 	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "Installed titles:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Installed titles:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "SD: %lu (NAND: %lu)", titleCount(MEDIATYPE_SD), titleCount(MEDIATYPE_NAND));
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Installed titles:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "SD: %lu (NAND: %lu)", sdTitiles, nandTitles);
 	
 	u64 homemenuID = 0;
 	Result ret = APT_GetAppletInfo(APPID_HOMEMENU, &homemenuID, NULL, NULL, NULL, NULL);
@@ -409,6 +413,9 @@ void initServices(void)
 	strncpy(eulaVer, getEulaVersion(), 6);
 	strncpy(pin, getParentalPin(), 6);
 	strncpy(email, getParentalEmail(), 512);
+	
+	sdTitiles = titleCount(MEDIATYPE_SD);
+	nandTitles = titleCount(MEDIATYPE_NAND);
 }
 
 void termServices(void)

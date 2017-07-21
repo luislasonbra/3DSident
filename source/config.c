@@ -69,6 +69,9 @@ char * getParentalEmail(void)
 	CFGU_GetConfigInfoBlk2(0x200, 0x000C0002, data);
 	
 	snprintf(emailAddr, 0x200, "%s", (data + 1)); 
+	
+	if (strncmp(emailAddr, "", 0x1) == 0) // Null parental controls email
+		return "(null)";
 		
 	return emailAddr;
 }
@@ -79,7 +82,7 @@ void getParentalSecretAnswer(u8 * out)
            
 	CFG_GetConfigInfoBlk8(0x94, 0x00100001, data);
  
-	utf16_to_utf8(out, (u16*)(data + 0x10), 0x20); // 0x20 cause the secret answer can only be 32 characters long.
+	utf16_to_utf8(out, (u16*)(data + 0x10), 0x21); // 0x21 cause the secret answer can only be 32 characters long.
 }
 
 bool isDebugModeEnabled(void)
