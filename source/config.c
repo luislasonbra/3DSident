@@ -61,6 +61,27 @@ char * getParentalPin(void)
 	return parentalPin;
 }
 
+char * getParentalEmail(void)
+{	
+	u8 data[0x200];
+	static char emailAddr[0x200];
+	
+	CFGU_GetConfigInfoBlk2(0x200, 0x000C0002, data);
+	
+	snprintf(emailAddr, 0x200, "%s", (data + 1)); 
+		
+	return emailAddr;
+}
+
+void getParentalSecretAnswer(u8 * out)
+{	
+	u8 data[0x94]; // block 0x00100001 is of size 0x94
+           
+	CFG_GetConfigInfoBlk8(0x94, 0x00100001, data);
+ 
+	utf16_to_utf8(out, (u16*)(data + 0x10), 0x20); // 0x20 cause the secret answer can only be 32 characters long.
+}
+
 bool isDebugModeEnabled(void)
 {
 	u8 data[0x4];

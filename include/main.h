@@ -17,7 +17,7 @@
 
 #define SDK(a, b, c, d) ((a<<24) | (b<<16) | (c<<8) | d)
 
-char kernerlVersion[100], systemVersion[100], firmVersion[100], sdmcCID[33], nandCID[33], username[15], birthday[6], eulaVer[6], pin[6];
+char kernerlVersion[100], systemVersion[100], firmVersion[100], sdmcCID[33], nandCID[33], username[15], birthday[6], eulaVer[6], pin[6], email[512];
 
 sftd_font *font_m, *font_r;
 sf2d_texture *topScreen, *bottomScreen, *logo, *drive;

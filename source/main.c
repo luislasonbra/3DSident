@@ -132,7 +132,9 @@ void NNIDInfoMenu(void)
 }
 
 void configInfoMenu(void)
-{	
+{
+	u8 answer[0x20] = {0};
+	
 	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Config Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Config Menu");
 	
 	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "Username:");
@@ -147,8 +149,15 @@ void configInfoMenu(void)
 	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "Parental control pin:");
 	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Parental control pin:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%s", pin);
 	
-	/*sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "Debug mode:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Debug mode:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%s", isDebugModeEnabled()? "enabled" : "disabled");*/
+	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "Parental control email:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Parental control email:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%s", email);
+	
+	getParentalSecretAnswer(answer);
+	sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "Parental control answer:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Parental control answer:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s\n", answer + 1);
+	
+	/*sftd_draw_text(font_r, 20, 216, RGBA8(120, 118, 115, 255), 12, "Debug mode:");
+	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Debug mode:") + 3), 216, RGBA8(67, 72, 66, 255), 12, "%s", isDebugModeEnabled()? "enabled" : "disabled");*/
 }
 
 void hardwareMenu(void)
@@ -399,6 +408,7 @@ void initServices(void)
 	strncpy(birthday, getBirthday(), 6);
 	strncpy(eulaVer, getEulaVersion(), 6);
 	strncpy(pin, getParentalPin(), 6);
+	strncpy(email, getParentalEmail(), 512);
 }
 
 void termServices(void)

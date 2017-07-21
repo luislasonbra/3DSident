@@ -10,6 +10,8 @@ const char * getUsername(void);
 char * getBirthday(void);
 char * getEulaVersion(void);
 char * getParentalPin(void);
+char * getParentalEmail(void);
+void getParentalSecretAnswer(u8 * out);
 bool isDebugModeEnabled(void);
 
 #endif
