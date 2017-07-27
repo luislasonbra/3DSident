@@ -30,14 +30,14 @@ include $(DEVKITARM)/3ds_rules
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 RESOURCES   :=	resources
-SOURCES		:=	source source/services
+SOURCES		:=	source source/graphics source/services
 DATA		:=	data
-INCLUDES	:=	include include/services
+INCLUDES	:=	include include/graphics include/services
 ROMFS		:=	romfs
 
-APP_TITLE	:= 3DSident
+APP_TITLE		:= 3DSident-GUI
 APP_DESCRIPTION	:= Get more info about your 3DS, firmware, region etc. 
-APP_AUTHOR	:= Joel16
+APP_AUTHOR		:= Joel16
 
 ICON 		:= $(RESOURCES)/icon.png
 BANNER 		:= $(RESOURCES)/banner.png
@@ -54,10 +54,9 @@ APP_ROMFS_DIR		:= $(TOPDIR)/romfs
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
-CFLAGS	:=	-g -Wall -O2 -mword-relocations -Werror \
+CFLAGS	:=	-g -Wall -O2 -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections \
 			$(ARCH)
 
@@ -68,7 +67,7 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:= -lsftd -lsfil -lfreetype -lsf2d -lcitro3d -lctru -lpng16 -lm -lz
+LIBS	:= -lcitro3d -lctru -lm -lpng16 -lz
 
 OS := $(shell uname)
 
@@ -76,18 +75,14 @@ OS := $(shell uname)
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
+LIBDIRS	:= $(CTRULIB) $(PORTLIBS)
 
-LIBDIRS  := $(CTRULIB) $(PORTLIBS)
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
 # rules for different file extensions
 #---------------------------------------------------------------------------------
-
-#---------------------------------------------------------------------------------
-
 ifneq ($(BUILD),$(notdir $(CURDIR)))
-
 #---------------------------------------------------------------------------------
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
@@ -101,30 +96,32 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
+PICAFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.v.pica)))
+SHLISTFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.shlist)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
 #---------------------------------------------------------------------------------
-
 ifeq ($(strip $(CPPFILES)),)
-
 #---------------------------------------------------------------------------------
 	export LD	:=	$(CC)
 #---------------------------------------------------------------------------------
-
 else
-
 #---------------------------------------------------------------------------------
 	export LD	:=	$(CXX)
 #---------------------------------------------------------------------------------
-
 endif
-
 #---------------------------------------------------------------------------------
 
-export OFILES	:=	$(addsuffix .o,$(BINFILES)) \
-			$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
+export OFILES_SOURCES 	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
+
+export OFILES_BIN	:=	$(addsuffix .o,$(BINFILES)) \
+			$(PICAFILES:.v.pica=.shbin.o) $(SHLISTFILES:.shlist=.shbin.o)
+
+export OFILES := $(OFILES_BIN) $(OFILES_SOURCES)
+
+export HFILES	:=	$(PICAFILES:.v.pica=_shbin.h) $(addsuffix .h,$(subst .,_,$(BINFILES)))
 
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
@@ -156,7 +153,6 @@ endif
 .PHONY: $(BUILD) clean all
 
 #---------------------------------------------------------------------------------
-
 all: $(BUILD)
 
 $(BUILD):
@@ -164,17 +160,15 @@ $(BUILD):
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------
-
 clean:
+	@echo clean ...
 	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(OUTPUT).elf $(OUTPUT)-stripped.elf $(OUTPUT).bin $(OUTPUT).3ds $(OUTPUT).cia icon.bin banner.bin
 
 #---------------------------------------------------------------------------------
-
 banner:
 	@$(TOPDIR)/tools/bannertool
 
 #---------------------------------------------------------------------------------
-
 else
 
 DEPENDS	:=	$(OFILES:.o=.d)
@@ -182,19 +176,19 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
-
 ifeq ($(strip $(NO_SMDH)),)
 $(OUTPUT).3dsx	:	$(OUTPUT).smdh icon.bin banner.bin $(OUTPUT).elf $(OUTPUT)-stripped.elf $(OUTPUT).bin $(OUTPUT).3ds $(OUTPUT).cia
 else
 $(OUTPUT).3dsx	:	icon.bin banner.bin $(OUTPUT).elf $(OUTPUT)-stripped.elf $(OUTPUT).bin $(OUTPUT).3ds $(OUTPUT).cia
 endif
 
-#---------------------------------------------------------------------------------
+$(OFILES_SOURCES) : $(HFILES)
 
+$(OUTPUT).elf	:	$(OFILES)
+
+#---------------------------------------------------------------------------------
 icon.bin	:
-
 #---------------------------------------------------------------------------------
-
 ifeq ($(UNAME), Linux)
 	@$(TOPDIR)/tools/linux/bannertool makesmdh -s $(APP_TITLE) -l $(APP_TITLE) -p $(APP_AUTHOR) -i $(TOPDIR)/$(ICON) -o $(TOPDIR)/icon.bin -f visible allow3d
 else ifeq ($(UNAME), Darwin)
@@ -204,11 +198,8 @@ else
 endif
 
 #---------------------------------------------------------------------------------
-
 banner.bin	:
-
 #---------------------------------------------------------------------------------
-
 ifeq ($(UNAME), Linux)
 	@$(TOPDIR)/tools/linux/bannertool makebanner -i $(TOPDIR)/$(BANNER) -a $(TOPDIR)/$(JINGLE) -o $(TOPDIR)/banner.bin
 else ifeq ($(UNAME), Darwin)
@@ -218,22 +209,16 @@ else
 endif
 
 #---------------------------------------------------------------------------------
-
 $(OUTPUT).elf	:	$(OFILES)
-
 #---------------------------------------------------------------------------------
-
 $(OUTPUT)-stripped.elf : $(OUTPUT).elf
 
 #---------------------------------------------------------------------------------
-
 	@cp -f $(OUTPUT).elf $(OUTPUT)-stripped.elf
 	@arm-none-eabi-strip $(OUTPUT)-stripped.elf
 
 #---------------------------------------------------------------------------------
-
 $(OUTPUT).bin	:
-
 #---------------------------------------------------------------------------------
 ifeq ($(UNAME), Linux)
 	@$(TOPDIR)/tools/linux/3dstool -cvtf romfs $(OUTPUT).bin --romfs-dir $(APP_ROMFS_DIR)
@@ -245,9 +230,7 @@ endif
 	@echo RomFS packaged ...
 
 #---------------------------------------------------------------------------------
-
 $(OUTPUT).3ds	:	$(OUTPUT)-stripped.elf $(OUTPUT).bin icon.bin banner.bin
-
 #---------------------------------------------------------------------------------
 ifeq ($(UNAME), Linux)
 	@$(TOPDIR)/tools/linux/makerom -f cci -o $(OUTPUT).3ds -DAPP_ENCRYPTED=true -DAPP_UNIQUE_ID=$(APP_UNIQUE_ID) -elf $(OUTPUT)-stripped.elf -rsf "$(TOPDIR)/resources/cia.rsf" -icon $(TOPDIR)/icon.bin -banner $(TOPDIR)/banner.bin  -exefslogo -target t -romfs "$(OUTPUT).bin"
@@ -259,11 +242,8 @@ endif
 	@echo 3DS packaged ...
 
 #---------------------------------------------------------------------------------
-
 $(OUTPUT).cia	:	$(OUTPUT)-stripped.elf $(OUTPUT).bin icon.bin banner.bin
-
 #---------------------------------------------------------------------------------
-
 ifeq ($(UNAME), Linux)
 	@$(TOPDIR)/tools/linux/makerom -f cia -o $(OUTPUT).cia -DAPP_ENCRYPTED=false -DAPP_UNIQUE_ID=$(APP_UNIQUE_ID) -elf $(OUTPUT)-stripped.elf -rsf "$(TOPDIR)/resources/cia.rsf" -icon $(TOPDIR)/icon.bin -logo "$(TOPDIR)/resources/logo.bcma.lz" -banner $(TOPDIR)/banner.bin  -exefslogo -target t -romfs "$(OUTPUT).bin"
 else ifeq ($(UNAME), Darwin)
@@ -274,38 +254,39 @@ endif
 	@echo CIA packaged ...
 
 #---------------------------------------------------------------------------------
-
-%.ttf.o	:	%.ttf
-
+# you need a rule like this for each extension you use as binary data
 #---------------------------------------------------------------------------------
-
+%.png.o	%_png.h :	%.png
+#---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	@$(bin2o)
 
 #---------------------------------------------------------------------------------
 # rules for assembling GPU shaders
 #---------------------------------------------------------------------------------
-
 define shader-as
-	$(eval CURBIN := $(patsubst %.shbin.o,%.shbin,$(notdir $@)))
-	picasso -o $(CURBIN) $1
-	bin2s $(CURBIN) | $(AS) -o $@
+	$(eval CURBIN := $*.shbin)
+	$(eval DEPSFILE := $(DEPSDIR)/$*.shbin.d)
+	echo "$(CURBIN).o: $< $1" > $(DEPSFILE)
 	echo "extern const u8" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`"_end[];" > `(echo $(CURBIN) | tr . _)`.h
 	echo "extern const u8" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`"[];" >> `(echo $(CURBIN) | tr . _)`.h
 	echo "extern const u32" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`_size";" >> `(echo $(CURBIN) | tr . _)`.h
+	picasso -o $(CURBIN) $1
+	bin2s $(CURBIN) | $(AS) -o $*.shbin.o
 endef
 
-%.shbin.o : %.v.pica %.g.pica
+%.shbin.o %_shbin.h : %.v.pica %.g.pica
 	@echo $(notdir $^)
 	@$(call shader-as,$^)
 
-%.shbin.o : %.v.pica
+%.shbin.o %_shbin.h : %.v.pica
 	@echo $(notdir $<)
 	@$(call shader-as,$<)
 
-%.shbin.o : %.shlist
+%.shbin.o %_shbin.h : %.shlist
 	@echo $(notdir $<)
-	@$(call shader-as,$(foreach file,$(shell cat $<),$(dir $<)/$(file)))
+	@$(call shader-as,$(foreach file,$(shell cat $<),$(dir $<)$(file)))
+	@$(call shader-as,$<)
 
 -include $(DEPENDS)
 

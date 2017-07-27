@@ -1,263 +1,324 @@
+#include <3ds.h>
+#include <citro3d.h>
+
 #include "actu.h"
 #include "am.h"
 #include "cfgs.h"
 #include "config.h"
 #include "fs.h"
 #include "kernel.h"
-#include "main.h"
 #include "mcu.h"
 #include "misc.h"
 #include "power.h"
+#include "screen.h"
 #include "screenshot.h"
 #include "system.h"
 #include "utils.h"
 #include "wifi.h"
 
+#define selector_xDistance 0
+#define selector_yDistance 18
+#define MAX_ITEMS 10
+
+#define SDK(a, b, c, d) ((a<<24) | (b<<16) | (c<<8) | d)
+
+char kernerlVersion[100], systemVersion[100], firmVersion[100], sdmcCID[33], nandCID[33], username[15], birthday[6], eulaVer[6], pin[6], email[512];
+u32 sdTitiles;
+u32 nandTitles;
+
 void kernelMenu(void)
 {	
-	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Kernel Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Kernel Menu");
+	float width = 0;
+	
+	width = screen_get_string_width("Kernel Menu", 0.41f, 0.41f);
+	screen_draw_string(((400 - width) / 2), 90, 0.41f, 0.41f, COLOUR_MENU, "Kernel Menu");
 
-	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "Kernel version:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Kernel version:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "%s", kernerlVersion);
+	screen_draw_string(20, 120, 0.41f, 0.41f, COLOUR_SUBJECT, "Kernel version:");
+	width = screen_get_string_width("Kernel version:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "%s", kernerlVersion);
 	
-	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "FIRM version:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "FIRM version:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%s", firmVersion);
+	screen_draw_string(20, 136, 0.41f, 0.41f, COLOUR_SUBJECT, "FIRM version:");
+	width = screen_get_string_width("FIRM version:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%s", firmVersion);
 	
-	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "System version:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "System version:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%s", systemVersion);
+	screen_draw_string(20, 152, 0.41f, 0.41f, COLOUR_SUBJECT, "System version:");
+	width = screen_get_string_width("System version:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 152, 0.41f, 0.41f, COLOUR_VALUE, "%s", systemVersion);
 	
-	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "SDMC CID:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "SDMC CID:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%s", sdmcCID);
+	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "SDMC CID:");
+	width = screen_get_string_width("SDMC CID:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%s", sdmcCID);
 
-	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "NAND CID:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "NAND CID:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%s", nandCID);
+	screen_draw_string(20, 184, 0.41f, 0.41f, COLOUR_SUBJECT, "NAND CID:");
+	width = screen_get_string_width("NAND CID:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%s", nandCID);
 	
-	sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "Device ID:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Device ID:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%lu", getDeviceId());
+	screen_draw_string(20, 200, 0.41f, 0.41f, COLOUR_SUBJECT, "Device ID:");
+	width = screen_get_string_width("Device ID:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 200, 0.41f, 0.41f, COLOUR_VALUE, "%lu", getDeviceId());
 }
 
 void systemMenu(void)
 {
-	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "System Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "System Menu");
+	float width = 0;
 	
-	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "Model:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Model:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "%s (%s)", getModel(), getRegion());
+	width = screen_get_string_width("System Menu", 0.41f, 0.41f);
+	screen_draw_string(((400 - width) / 2), 90, 0.41f, 0.41f, COLOUR_MENU, "System Menu");
 	
-	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "Language:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Language:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%s", getLang());
+	screen_draw_string(20, 120, 0.41f, 0.41f, COLOUR_SUBJECT, "Model:");
+	width = screen_get_string_width("Model:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "%s (%s)", getModel(), getRegion());
 	
-	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "ECS Device ID:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "ECS Device ID:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%llu", getSoapId());
+	screen_draw_string(20, 136, 0.41f, 0.41f, COLOUR_SUBJECT, "Language:");
+	width = screen_get_string_width("Language:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%s", getLang());
 	
-	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "Local friend code seed:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Local friend code seed:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%010llX", getLocalFriendCodeSeed());
+	screen_draw_string(20, 152, 0.41f, 0.41f, COLOUR_SUBJECT, "ECS Device ID:");
+	width = screen_get_string_width("ECS Device ID:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 152, 0.41f, 0.41f, COLOUR_VALUE, "%llu", getSoapId());
 	
-	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "MAC Address:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "MAC Address:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%s", getMacAddress());
+	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "Local friend code seed:");
+	width = screen_get_string_width("Local friend code seed:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%010llX", getLocalFriendCodeSeed());
 	
-	sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "Serial number:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Serial number:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s", getSerialNum());
+	screen_draw_string(20, 184, 0.41f, 0.41f, COLOUR_SUBJECT, "MAC Address:");
+	width = screen_get_string_width("MAC Address:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%s", getMacAddress());
 	
-	sftd_draw_text(font_r, 20, 216, RGBA8(120, 118, 115, 255), 12, "Screen type:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Screen type:") + 3), 216, RGBA8(67, 72, 66, 255), 12, "%s", getScreenType());
+	screen_draw_string(20, 200, 0.41f, 0.41f, COLOUR_SUBJECT, "Serial number:");
+	width = screen_get_string_width("Serial number:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 200, 0.41f, 0.41f, COLOUR_VALUE, "%s", getSerialNum());
+	
+	screen_draw_string(20, 216, 0.41f, 0.41f, COLOUR_SUBJECT, "Screen type:");
+	width = screen_get_string_width("Screen type:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 216, 0.41f, 0.41f, COLOUR_VALUE, "%s", getScreenType());
 }
 
 void batteryMenu(void)
 {
+	float width = 0;
+	
 	u8 batteryPercent = 0, batteryVolt = 0, mcuFwMajor = 0, mcuFwMinor = 0;
 	bool isConnected = false;
 	
-	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Battery Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Battery Menu");
+	width = screen_get_string_width("Battery Menu", 0.41f, 0.41f);
+	screen_draw_string(((400 - width) / 2), 90, 0.41f, 0.41f, COLOUR_MENU, "Battery Menu");
 	
 	mcuGetBatteryLevel(&batteryPercent);
+	screen_draw_string(20, 120, 0.41f, 0.41f, COLOUR_SUBJECT, "Battery percentage:");
+	width = screen_get_string_width("Battery percentage:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "%3d%%", batteryPercent);
+	
+	screen_draw_string(20, 136, 0.41f, 0.41f, COLOUR_SUBJECT, "Battery status:");
+	width = screen_get_string_width("Battery status:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%s", batteryStatus());
+	
 	mcuGetBatteryVoltage(&batteryVolt);
-	
-	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "Battery percentage:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Battery percentage:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "%3d%%", batteryPercent);
-	
-	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "Battery status:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Battery status:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%s", batteryStatus());
-	
-	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "Battery voltage:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Battery voltage:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%d (%.1f V)", batteryVolt, 5.0 * ((double)batteryVolt / 256.0));
+	screen_draw_string(20, 152, 0.41f, 0.41f, COLOUR_SUBJECT, "Battery voltage:");
+	width = screen_get_string_width("Battery voltage:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 152, 0.41f, 0.41f, COLOUR_VALUE, "%d (%.1f V)", batteryVolt, 5.0 * ((double)batteryVolt / 256.0));
 	
 	PTMU_GetAdapterState(&isConnected);
-	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "Adapter state:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Adapter state:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%s", isConnected? "connected" : "disconnected");
+	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "Adapter state:");
+	width = screen_get_string_width("Adapter state:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%s", isConnected? "connected" : "disconnected");
 	
 	GetMcuFwVerHigh(&mcuFwMajor);
 	GetMcuFwVerLow(&mcuFwMinor);
 	//if (CFG_UNITINFO == 0)
-	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "MCU firmware:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "MCU firmware:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%u.%u", (mcuFwMajor - 16), mcuFwMinor);
+	screen_draw_string(20, 184, 0.41f, 0.41f, COLOUR_SUBJECT, "MCU firmware:");
+	width = screen_get_string_width("MCU firmware:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%u.%u", (mcuFwMajor - 16), mcuFwMinor);
 }
 
 void NNIDInfoMenu(void)
 {	
+	float width = 0;
 	u32 principalID = 0;
 	char name[0x16];
 	
 	AccountDataBlock accountDataBlock;
 	ACTU_GetAccountDataBlock((u8*)&accountDataBlock, 0xA0, 0x11);
 
-	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "NNID Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "NNID Menu");
+	width = screen_get_string_width("NNID Menu", 0.41f, 0.41f);
+	screen_draw_string(((400 - width) / 2), 90, 0.41f, 0.41f, COLOUR_MENU, "NNID Menu");
 	
 	// getNNIDInfo(0x11, 0x8), getNNIDInfo(0x11, 0x1C), getNNIDInfo(0x11, 0x15) are all the same.
-	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "NNID:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "NNID:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x11, 0x8));
+	screen_draw_string(20, 120, 0.41f, 0.41f, COLOUR_SUBJECT, "NNID:");
+	width = screen_get_string_width("NNID:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "%s", getNNIDInfo(0x11, 0x8));
 
 	utf2ascii(name, accountDataBlock.miiName);
-	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "Mii name:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Mii name:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%s", name);
+	screen_draw_string(20, 136, 0.41f, 0.41f, COLOUR_SUBJECT, "Mii name:");
+	width = screen_get_string_width("Mii name:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%s", name);
 	
 	ACTU_GetAccountDataBlock(&principalID, 0x4, 0xC);
-	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "Principal ID:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Principal ID:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%u", principalID);
+	screen_draw_string(20, 152, 0.41f, 0.41f, COLOUR_SUBJECT, "Principal ID:");
+	width = screen_get_string_width("Principal ID:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 152, 0.41f, 0.41f, COLOUR_VALUE, "%u", principalID);
 	
-	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "Persistent ID:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Persistent ID:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%u", accountDataBlock.persistentID);
+	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "Persistent ID:");
+	width = screen_get_string_width("Persistent ID:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%u", accountDataBlock.persistentID);
 	
-	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "Transferable ID Base:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Transferable ID Base:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%llu", accountDataBlock.transferableID);
+	screen_draw_string(20, 184, 0.41f, 0.41f, COLOUR_SUBJECT, "Transferable ID Base:");
+	width = screen_get_string_width("Transferable ID Base:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%llu", accountDataBlock.transferableID);
 	
-	sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "Country:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Country:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x3, 0xB));
+	screen_draw_string(20, 200, 0.41f, 0.41f, COLOUR_SUBJECT, "Country:");
+	width = screen_get_string_width("Country:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 200, 0.41f, 0.41f, COLOUR_VALUE, "%s", getNNIDInfo(0x3, 0xB));
 	
-	sftd_draw_text(font_r, 20, 216, RGBA8(120, 118, 115, 255), 12, "Time Zone:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Time Zone:") + 3), 216, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x41, 0x1E));
-	
-	/*sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "Mii url:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Mii url:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%.54s", getNNIDInfo(0x101, 0x25));
-	sftd_draw_textf(font_r, 20, 195, RGBA8(67, 72, 66, 255), 12, "%s", getNNIDInfo(0x101, 0x25) + + strlen(getNNIDInfo(0x101, 0x25)) - 12);*/
+	screen_draw_string(20, 216, 0.41f, 0.41f, COLOUR_SUBJECT, "Time Zone:");
+	width = screen_get_string_width("Time Zone:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 216, 0.41f, 0.41f, COLOUR_VALUE, "%s", getNNIDInfo(0x41, 0x1E));
 }
 
 void configInfoMenu(void)
 {
+	float width = 0;
 	u8 answer[0x21] = {0};
 	
-	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Config Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Config Menu");
+	width = screen_get_string_width("Config Menu", 0.41f, 0.41f);
+	screen_draw_string(((400 - width) / 2), 90, 0.41f, 0.41f, COLOUR_MENU, "Config Menu");
 	
-	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "Username:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Username:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "%s", username);
+	screen_draw_string(20, 120, 0.41f, 0.41f, COLOUR_SUBJECT, "Username:");
+	width = screen_get_string_width("Username:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "%s", username);
 	
-	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "Birthday:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Birthday:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%s", birthday);
+	screen_draw_string(20, 136, 0.41f, 0.41f, COLOUR_SUBJECT, "Birthday:");
+	width = screen_get_string_width("Birthday:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%s", birthday);
 	
-	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "EULA version:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "EULA version:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%s", eulaVer);
+	screen_draw_string(20, 152, 0.41f, 0.41f, COLOUR_SUBJECT, "EULA version:");
+	width = screen_get_string_width("EULA version:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 152, 0.41f, 0.41f, COLOUR_VALUE, "%s", eulaVer);
 	
-	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "Parental control pin:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Parental control pin:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%s", pin);
+	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "Parental control pin:");
+	width = screen_get_string_width("Parental control pin:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%s", pin);
 	
-	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "Parental control email:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Parental control email:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%s", email);
+	screen_draw_string(20, 184, 0.41f, 0.41f, COLOUR_SUBJECT, "Parental control email:");
+	width = screen_get_string_width("Parental control email:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%s", email);
 	
 	getParentalSecretAnswer(answer);
-	sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "Parental control answer:");
+	screen_draw_string(20, 200, 0.41f, 0.41f, COLOUR_SUBJECT, "Parental control answer:");
+	width = screen_get_string_width("Parental control answer:", 0.41f, 0.41f);
 	
 	if (!answer[0])
-		sftd_draw_text(font_r, (20 + sftd_get_text_width(font_r, 12, "Parental control answer:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "(null)");
+		screen_draw_string((20 + width + 3), 200, 0.41f, 0.41f, COLOUR_VALUE, "(null)");
 	else
-		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Parental control answer:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s\n", answer + 1);
+		screen_draw_stringf((20 + width + 3), 200, 0.41f, 0.41f, COLOUR_VALUE, "%s\n", answer + 1);
 	
-	/*sftd_draw_text(font_r, 20, 216, RGBA8(120, 118, 115, 255), 12, "Debug mode:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Debug mode:") + 3), 216, RGBA8(67, 72, 66, 255), 12, "%s", isDebugModeEnabled()? "enabled" : "disabled");*/
+	/*screen_draw_string(20, 216, 0.41f, 0.41f, COLOUR_SUBJECT, "Debug mode:");
+	width = screen_get_string_width("Country:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 216, 0.41f, 0.41f, COLOUR_VALUE, "%s", isDebugModeEnabled()? "enabled" : "disabled");*/
 }
 
 void hardwareMenu(void)
 {
+	float width = 0;
 	bool hpInserted = false;
 	u8 volume = 0;
 	
-	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Hardware Menu")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Hardware Menu");
+	width = screen_get_string_width("Hardware Menu", 0.41f, 0.41f);
+	screen_draw_string(((400 - width) / 2), 90, 0.41f, 0.41f, COLOUR_MENU, "Hardware Menu");
 	
 	DSP_GetHeadphoneStatus(&hpInserted);
-	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "Headphone status:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Headphone status:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "%s", hpInserted? "inserted" : "not inserted");
+	screen_draw_string(20, 120, 0.41f, 0.41f, COLOUR_SUBJECT, "Headphone status:");
+	width = screen_get_string_width("Headphone status:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "%s", hpInserted? "inserted" : "not inserted");
 	
-	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "Card slot status:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Card slot status:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%s", getCardSlotStatus());
+	screen_draw_string(20, 136, 0.41f, 0.41f, COLOUR_SUBJECT, "Card slot status:");
+	width = screen_get_string_width("Card slot status:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%s", getCardSlotStatus());
 	
-	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "SDMC status:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "SDMC status:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%s", detectSD()? "detected" : "not detected");
+	screen_draw_string(20, 152, 0.41f, 0.41f, COLOUR_SUBJECT, "SDMC status:");
+	width = screen_get_string_width("SDMC status:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 152, 0.41f, 0.41f, COLOUR_VALUE, "%s", detectSD()? "detected" : "not detected");
 	
 	HIDUSER_GetSoundVolume(&volume);
 	double volPercent = (volume * 1.5873015873);
-	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "Volume slider state:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Volume slider state:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%d (%.0lf%%)", volume, volPercent);
+	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "Volume slider state:");
+	width = screen_get_string_width("Volume slider state:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%d (%.0lf%%)", volume, volPercent);
 	
 	double _3dSliderPercent = (osGet3DSliderState() * 100.0);
-	sftd_draw_text(font_r, 20, 184, RGBA8(120, 118, 115, 255), 12, "3D slider state:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "3D slider state:") + 3), 184, RGBA8(67, 72, 66, 255), 12, "%.1lf (%.0lf%%)", osGet3DSliderState(), _3dSliderPercent);
+	screen_draw_string(20, 184, 0.41f, 0.41f, COLOUR_SUBJECT, "3D slider state:");
+	width = screen_get_string_width("3D slider state:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%.1lf (%.0lf%%)", osGet3DSliderState(), _3dSliderPercent);
 
-	sftd_draw_text(font_r, 20, 200, RGBA8(120, 118, 115, 255), 12, "Brightness:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Brightness:") + 3), 200, RGBA8(67, 72, 66, 255), 12, "%s", getBrightness(1));
+	screen_draw_string(20, 200, 0.41f, 0.41f, COLOUR_SUBJECT, "Brightness:");
+	width = screen_get_string_width("Brightness:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 200, 0.41f, 0.41f, COLOUR_VALUE, "%s", getBrightness(1));
 }
 
 void wifiMenu(void)
 {
-	sf2d_draw_rectangle(0, 19, 400, 221, RGBA8(242, 241, 239, 255));
+	screen_draw_rect(0, 19, 400, 221, RGBA8(242, 241, 239, 255));
 	
 	wifiSlotStructure slotData;
 	
 	Result wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 0, (u8*)&slotData);
 	if ((!wifiRet) && (slotData.set))
 	{
-		sf2d_draw_rectangle(15, 27, 370, 70, RGBA8(180, 180, 178, 255));
-		sf2d_draw_rectangle(16, 28, 368, 68, RGBA8(255, 255, 253, 255));
+		screen_draw_rect(15, 27, 370, 70, RGBA8(180, 180, 178, 255));
+		screen_draw_rect(16, 28, 368, 68, RGBA8(255, 255, 253, 255));
 		
-		sftd_draw_text(font_r, 20, 30, RGBA8(120, 118, 115, 255), 12, "WiFi Slot 1:");
+		screen_draw_string(20, 30, 0.41f, 0.41f, COLOUR_SUBJECT, "WiFi Slot 1:");
 		if (slotData.network.use) 
 		{
-			sftd_draw_textf(font_r, 20, 46, RGBA8(67, 72, 66, 255), 12, "SSID: %s", slotData.network.SSID);
-			sftd_draw_textf(font_r, 20, 62, RGBA8(67, 72, 66, 255), 12, "Pass: %s", slotData.network.passphrase);
+			screen_draw_stringf(20, 46, 0.41f, 0.41f, COLOUR_VALUE, "SSID: %s", slotData.network.SSID);
+			screen_draw_stringf(20, 62, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s", slotData.network.passphrase);
 		}
 		else if (slotData.network_WPS.use) 
 		{
-			sftd_draw_textf(font_r, 20, 46, RGBA8(67, 72, 66, 255), 12, "SSID: %s", slotData.network_WPS.SSID);
-			sftd_draw_textf(font_r, 20, 62, RGBA8(67, 72, 66, 255), 12, "Pass: %s", slotData.network_WPS.passphrase);
+			screen_draw_stringf(20, 46, 0.41f, 0.41f, COLOUR_VALUE, "SSID: %s", slotData.network_WPS.SSID);
+			screen_draw_stringf(20, 62, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s", slotData.network_WPS.passphrase);
 		}
-		sftd_draw_textf(font_r, 20, 78, RGBA8(67, 72, 66, 255), 12, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
+		screen_draw_stringf(20, 78, 0.41f, 0.41f, COLOUR_VALUE, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
 	}
 	
 	wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 1, (u8*)&slotData);
 	if ((!wifiRet) && (slotData.set))
 	{
-		sf2d_draw_rectangle(15, 95, 370, 70, RGBA8(180, 180, 178, 255));
-		sf2d_draw_rectangle(16, 96, 368, 68, RGBA8(255, 255, 253, 255));
+		screen_draw_rect(15, 95, 370, 70, RGBA8(180, 180, 178, 255));
+		screen_draw_rect(16, 96, 368, 68, RGBA8(255, 255, 253, 255));
 		
-		sftd_draw_text(font_r, 20, 98, RGBA8(120, 118, 115, 255), 12, "WiFi Slot 2:");
+		screen_draw_string(20, 98, 0.41f, 0.41f, COLOUR_SUBJECT, "WiFi Slot 2:");
 		if (slotData.network.use) 
 		{
-			sftd_draw_textf(font_r, 20, 114, RGBA8(67, 72, 66, 255), 12, "SSID: %s", slotData.network.SSID);
-			sftd_draw_textf(font_r, 20, 130, RGBA8(67, 72, 66, 255), 12, "Pass: %s", slotData.network.passphrase);
+			screen_draw_stringf(20, 114, 0.41f, 0.41f, COLOUR_VALUE, "SSID: %s", slotData.network.SSID);
+			screen_draw_stringf(20, 130, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s", slotData.network.passphrase);
 		}
 		else if (slotData.network_WPS.use) 
 		{
-			sftd_draw_textf(font_r, 20, 114, RGBA8(67, 72, 66, 255), 12, "SSID: %s", slotData.network_WPS.SSID);
-			sftd_draw_textf(font_r, 20, 130, RGBA8(67, 72, 66, 255), 12, "Pass: %s", slotData.network_WPS.passphrase);
+			screen_draw_stringf(20, 114, 0.41f, 0.41f, COLOUR_VALUE, "SSID: %s", slotData.network_WPS.SSID);
+			screen_draw_stringf(20, 130, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s", slotData.network_WPS.passphrase);
 		}
-		sftd_draw_textf(font_r, 20, 146, RGBA8(67, 72, 66, 255), 12, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
+		screen_draw_stringf(20, 146, 0.41f, 0.41f, COLOUR_VALUE, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
 	}
 	
 	wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 2, (u8*)&slotData);
 	if ((!wifiRet) && (slotData.set))
 	{
-		sf2d_draw_rectangle(15, 163, 370, 70, RGBA8(180, 180, 178, 255));
-		sf2d_draw_rectangle(16, 164, 368, 68, RGBA8(255, 255, 253, 255));
+		screen_draw_rect(15, 163, 370, 70, RGBA8(180, 180, 178, 255));
+		screen_draw_rect(16, 164, 368, 68, RGBA8(255, 255, 253, 255));
 		
-		sftd_draw_text(font_r, 20, 166, RGBA8(120, 118, 115, 255), 12, "WiFi Slot 3:");
+		screen_draw_string(20, 166, 0.41f, 0.41f, COLOUR_SUBJECT, "WiFi Slot 3:");
 		if (slotData.network.use) 
 		{
-			sftd_draw_textf(font_r, 20, 182, RGBA8(67, 72, 66, 255), 12, "SSID: %s", slotData.network.SSID);
-			sftd_draw_textf(font_r, 20, 198, RGBA8(67, 72, 66, 255), 12, "Pass: %s", slotData.network.passphrase);
+			screen_draw_stringf(20, 182, 0.41f, 0.41f, COLOUR_VALUE, "SSID: %s", slotData.network.SSID);
+			screen_draw_stringf(20, 198, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s", slotData.network.passphrase);
 		}
 		else if (slotData.network_WPS.use) 
 		{
-			sftd_draw_textf(font_r, 20, 182, RGBA8(67, 72, 66, 255), 12, "SSID: %s", slotData.network_WPS.SSID);
-			sftd_draw_textf(font_r, 20, 198, RGBA8(67, 72, 66, 255), 12, "Pass: %s", slotData.network_WPS.passphrase);
+			screen_draw_stringf(20, 182, 0.41f, 0.41f, COLOUR_VALUE, "SSID: %s", slotData.network_WPS.SSID);
+			screen_draw_stringf(20, 198, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s", slotData.network_WPS.passphrase);
 		}
-		sftd_draw_textf(font_r, 20, 214, RGBA8(67, 72, 66, 255), 12, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
+		screen_draw_stringf(20, 214, 0.41f, 0.41f, COLOUR_VALUE, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
 	}
 }
 
@@ -270,7 +331,7 @@ void storageMenu(void)
 	char twlFreeSize[16], twlUsedSize[16], twlTotalSize[16];
 	char twlpFreeSize[16], twlpUsedSize[16], twlpTotalSize[16];
 	
-	sf2d_draw_rectangle(0, 19, 400, 221, RGBA8(242, 241, 239, 255));
+	screen_draw_rect(0, 19, 400, 221, RGBA8(242, 241, 239, 255));
 	
 	getSizeString(sdFreeSize, getFreeStorage(SYSTEM_MEDIATYPE_SD));
 	getSizeString(sdUsedSize, getUsedStorage(SYSTEM_MEDIATYPE_SD));
@@ -287,82 +348,88 @@ void storageMenu(void)
 	
 	sdUsed = getUsedStorage(SYSTEM_MEDIATYPE_SD);
 	sdTotal = getTotalStorage(SYSTEM_MEDIATYPE_SD);
-	sf2d_draw_texture(drive, 20, 45);
-	sf2d_draw_rectangle(20, 105, 60, 10, RGBA8(120, 118, 115, 255));
-	sf2d_draw_rectangle(21, 106, 58, 8, RGBA8(242, 241, 239, 255));
-	sf2d_draw_rectangle(21, 106, (((double)sdUsed / (double)sdTotal) * 58.00), 8, RGBA8(242, 119, 62, 255));
-	sftd_draw_text(font_r, 85, 50, RGBA8(67, 72, 66, 255), 12, "SD:");
-	sftd_draw_text(font_r, 85, 66, RGBA8(120, 118, 115, 255), 12, "Free:");
-	sftd_draw_text(font_r, 85, 82, RGBA8(120, 118, 115, 255), 12, "Used:");
-	sftd_draw_text(font_r, 85, 98, RGBA8(120, 118, 115, 255), 12, "Total:");
-	sftd_draw_textf(font_r, (85 + sftd_get_text_width(font_r, 12, "Free:") + 3), 66, RGBA8(67, 72, 66, 255), 12, "%s", sdFreeSize);
-	sftd_draw_textf(font_r, (85 + sftd_get_text_width(font_r, 12, "Used:") + 3), 82, RGBA8(67, 72, 66, 255), 12, "%s", sdUsedSize);
-	sftd_draw_textf(font_r, (85 + sftd_get_text_width(font_r, 12, "Total:") + 3), 98, RGBA8(67, 72, 66, 255), 12, "%s", sdTotalSize);
+	screen_draw_rect(20, 105, 60, 10, RGBA8(120, 118, 115, 255));
+	screen_draw_rect(21, 106, 58, 8, RGBA8(242, 241, 239, 255));
+	screen_draw_rect(21, 106, (((double)sdUsed / (double)sdTotal) * 58.00), 8, RGBA8(242, 119, 62, 255));
+	screen_draw_string(85, 50, 0.41f, 0.41f, COLOUR_VALUE, "SD:");
+	screen_draw_string(85, 71, 0.41f, 0.41f, COLOUR_SUBJECT, "Free:");
+	screen_draw_string(85, 87, 0.41f, 0.41f, COLOUR_SUBJECT, "Used:");
+	screen_draw_string(85, 103, 0.41f, 0.41f, COLOUR_SUBJECT, "Total:");
+	screen_draw_stringf((85 + screen_get_string_width("Free:", 0.41f, 0.41f) + 3), 71, 0.41f, 0.41f, COLOUR_VALUE, "%s", sdFreeSize);
+	screen_draw_stringf((85 + screen_get_string_width("Used:", 0.41f, 0.41f) + 3), 87, 0.41f, 0.41f, COLOUR_VALUE, "%s", sdUsedSize);
+	screen_draw_stringf((85 + screen_get_string_width("Total:", 0.41f, 0.41f) + 3), 103, 0.41f, 0.41f, COLOUR_VALUE, "%s", sdTotalSize);
+	screen_draw_texture(TEXTURE_DRIVE_ICON, 20, 40);
 	
 	ctrUsed = getUsedStorage(SYSTEM_MEDIATYPE_CTR_NAND);
 	ctrTotal = getTotalStorage(SYSTEM_MEDIATYPE_CTR_NAND);
-	sf2d_draw_texture(drive, 220, 45);
-	sf2d_draw_rectangle(220, 105, 60, 10, RGBA8(120, 118, 115, 255));
-	sf2d_draw_rectangle(221, 106, 58, 8, RGBA8(242, 241, 239, 255));
-	sf2d_draw_rectangle(221, 106, (((double)ctrUsed / (double)ctrTotal) * 58.00), 8, RGBA8(242, 119, 62, 255));
-	sftd_draw_text(font_r, 285, 50, RGBA8(67, 72, 66, 255), 12, "CTR Nand:");
-	sftd_draw_text(font_r, 285, 66, RGBA8(120, 118, 115, 255), 12, "Free:");
-	sftd_draw_text(font_r, 285, 82, RGBA8(120, 118, 115, 255), 12, "Used:");
-	sftd_draw_text(font_r, 285, 98, RGBA8(120, 118, 115, 255), 12, "Total:");
-	sftd_draw_textf(font_r, (285 + sftd_get_text_width(font_r, 12, "Free:") + 3), 66, RGBA8(67, 72, 66, 255), 12, "%s", ctrFreeSize);
-	sftd_draw_textf(font_r, (285 + sftd_get_text_width(font_r, 12, "Used:") + 3), 82, RGBA8(67, 72, 66, 255), 12, "%s", ctrUsedSize);
-	sftd_draw_textf(font_r, (285 + sftd_get_text_width(font_r, 12, "Total:") + 3), 98, RGBA8(67, 72, 66, 255), 12, "%s", ctrTotalSize);
+	screen_draw_rect(220, 105, 60, 10, RGBA8(120, 118, 115, 255));
+	screen_draw_rect(221, 106, 58, 8, RGBA8(242, 241, 239, 255));
+	screen_draw_rect(221, 106, (((double)ctrUsed / (double)ctrTotal) * 58.00), 8, RGBA8(242, 119, 62, 255));
+	screen_draw_string(285, 50, 0.41f, 0.41f, COLOUR_VALUE, "CTR Nand:");
+	screen_draw_string(285, 71, 0.41f, 0.41f, COLOUR_SUBJECT, "Free:");
+	screen_draw_string(285, 87, 0.41f, 0.41f, COLOUR_SUBJECT, "Used:");
+	screen_draw_string(285, 103, 0.41f, 0.41f, COLOUR_SUBJECT, "Total:");
+	screen_draw_stringf((285 + screen_get_string_width("Free:", 0.41f, 0.41f) + 3), 71, 0.41f, 0.41f, COLOUR_VALUE, "%s", ctrFreeSize);
+	screen_draw_stringf((285 + screen_get_string_width("Used:", 0.41f, 0.41f) + 3), 87, 0.41f, 0.41f, COLOUR_VALUE, "%s", ctrUsedSize);
+	screen_draw_stringf((285 + screen_get_string_width("Total:", 0.41f, 0.41f) + 3), 103, 0.41f, 0.41f, COLOUR_VALUE, "%s", ctrTotalSize);
+	screen_draw_texture(TEXTURE_DRIVE_ICON, 220, 40);
 	
 	twlUsed = getUsedStorage(SYSTEM_MEDIATYPE_TWL_NAND);
 	twlTotal = getTotalStorage(SYSTEM_MEDIATYPE_TWL_NAND);
-	sf2d_draw_texture(drive, 20, 140);
-	sf2d_draw_rectangle(20, 200, 60, 10, RGBA8(120, 118, 115, 255));
-	sf2d_draw_rectangle(21, 201, 58, 8, RGBA8(242, 241, 239, 255));
-	sf2d_draw_rectangle(21, 201, (((double)twlUsed / (double)twlTotal) * 58.00), 8, RGBA8(242, 119, 62, 255));
-	sftd_draw_text(font_r, 85, 145, RGBA8(67, 72, 66, 255), 12, "TWL Nand:");
-	sftd_draw_text(font_r, 85, 161, RGBA8(120, 118, 115, 255), 12, "Free:");
-	sftd_draw_text(font_r, 85, 177, RGBA8(120, 118, 115, 255), 12, "Used:");
-	sftd_draw_text(font_r, 85, 193, RGBA8(120, 118, 115, 255), 12, "Total:");
-	sftd_draw_textf(font_r, (85 + sftd_get_text_width(font_r, 12, "Free:") + 3), 161, RGBA8(67, 72, 66, 255), 12, "%s", twlFreeSize);
-	sftd_draw_textf(font_r, (85 + sftd_get_text_width(font_r, 12, "Used:") + 3), 177, RGBA8(67, 72, 66, 255), 12, "%s", twlUsedSize);
-	sftd_draw_textf(font_r, (85 + sftd_get_text_width(font_r, 12, "Total:") + 3), 193, RGBA8(67, 72, 66, 255), 12, "%s", twlTotalSize);
+	screen_draw_rect(20, 200, 60, 10, RGBA8(120, 118, 115, 255));
+	screen_draw_rect(21, 201, 58, 8, RGBA8(242, 241, 239, 255));
+	screen_draw_rect(21, 201, (((double)twlUsed / (double)twlTotal) * 58.00), 8, RGBA8(242, 119, 62, 255));
+	screen_draw_string(85, 145, 0.41f, 0.41f, COLOUR_VALUE, "TWL Nand:");
+	screen_draw_string(85, 166, 0.41f, 0.41f, COLOUR_SUBJECT, "Free:");
+	screen_draw_string(85, 182, 0.41f, 0.41f, COLOUR_SUBJECT, "Used:");
+	screen_draw_string(85, 198, 0.41f, 0.41f, COLOUR_SUBJECT, "Total:");
+	screen_draw_stringf((85 + screen_get_string_width("Free:", 0.41f, 0.41f) + 3), 166, 0.41f, 0.41f, COLOUR_VALUE, "%s", twlFreeSize);
+	screen_draw_stringf((85 + screen_get_string_width("Used:", 0.41f, 0.41f) + 3), 182, 0.41f, 0.41f, COLOUR_VALUE, "%s", twlUsedSize);
+	screen_draw_stringf((85 + screen_get_string_width("Total:", 0.41f, 0.41f) + 3), 198, 0.41f, 0.41f, COLOUR_VALUE, "%s", twlTotalSize);
+	screen_draw_texture(TEXTURE_DRIVE_ICON, 20, 135);
 	
 	twlpUsed = getUsedStorage(SYSTEM_MEDIATYPE_TWL_PHOTO);
 	twlpTotal = getTotalStorage(SYSTEM_MEDIATYPE_TWL_PHOTO);
-	sf2d_draw_texture(drive, 220, 140);
-	sf2d_draw_rectangle(220, 200, 60, 10, RGBA8(120, 118, 115, 255));
-	sf2d_draw_rectangle(221, 201, 58, 8, RGBA8(242, 241, 239, 255));
-	sf2d_draw_rectangle(221, 201, (((double)twlpUsed / (double)twlpTotal) * 58.00), 8, RGBA8(242, 119, 62, 255));
-	sftd_draw_text(font_r, 285, 145, RGBA8(67, 72, 66, 255), 12, "TWL Photo:");
-	sftd_draw_text(font_r, 285, 161, RGBA8(120, 118, 115, 255), 12, "Free:");
-	sftd_draw_text(font_r, 285, 177, RGBA8(120, 118, 115, 255), 12, "Used:");
-	sftd_draw_text(font_r, 285, 193, RGBA8(120, 118, 115, 255), 12, "Total:");
-	sftd_draw_textf(font_r, (285 + sftd_get_text_width(font_r, 12, "Free:") + 3), 161, RGBA8(67, 72, 66, 255), 12, "%s", twlpFreeSize);
-	sftd_draw_textf(font_r, (285 + sftd_get_text_width(font_r, 12, "Used:") + 3), 177, RGBA8(67, 72, 66, 255), 12, "%s", twlpUsedSize);
-	sftd_draw_textf(font_r, (285 + sftd_get_text_width(font_r, 12, "Total:") + 3), 193, RGBA8(67, 72, 66, 255), 12, "%s", twlpTotalSize);
+	screen_draw_rect(220, 200, 60, 10, RGBA8(120, 118, 115, 255));
+	screen_draw_rect(221, 201, 58, 8, RGBA8(242, 241, 239, 255));
+	screen_draw_rect(221, 201, (((double)twlpUsed / (double)twlpTotal) * 58.00), 8, RGBA8(242, 119, 62, 255));
+	screen_draw_string(285, 145, 0.41f, 0.41f, COLOUR_VALUE, "TWL Photo:");
+	screen_draw_string(285, 166, 0.41f, 0.41f, COLOUR_SUBJECT, "Free:");
+	screen_draw_string(285, 182, 0.41f, 0.41f, COLOUR_SUBJECT, "Used:");
+	screen_draw_string(285, 198, 0.41f, 0.41f, COLOUR_SUBJECT, "Total:");
+	screen_draw_stringf((285 + screen_get_string_width("Free:", 0.41f, 0.41f) + 3), 166, 0.41f, 0.41f, COLOUR_VALUE, "%s", twlpFreeSize);
+	screen_draw_stringf((285 + screen_get_string_width("Used:", 0.41f, 0.41f) + 3), 182, 0.41f, 0.41f, COLOUR_VALUE, "%s", twlpUsedSize);
+	screen_draw_stringf((285 + screen_get_string_width("Total:", 0.41f, 0.41f) + 3), 198, 0.41f, 0.41f, COLOUR_VALUE, "%s", twlpTotalSize);
+	screen_draw_texture(TEXTURE_DRIVE_ICON, 220, 135);
 }
 
 void miscMenu(void)
 {	
+	float width = 0;
 	double wifiPercent = (osGetWifiStrength() * 33.3333333333);
 	
-	sftd_draw_text(font_m, ((400 - sftd_get_text_width(font_m, 12, "Miscellaneous")) / 2), 90, RGBA8(0, 0, 0, 255), 12, "Miscellaneous");
+	width = screen_get_string_width("Miscellaneous", 0.41f, 0.41f);
+	screen_draw_string(((400 - width) / 2), 90, 0.41f, 0.41f, COLOUR_MENU, "Miscellaneous");
 	
-	sftd_draw_text(font_r, 20, 120, RGBA8(120, 118, 115, 255), 12, "Installed titles:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Installed titles:") + 3), 120, RGBA8(67, 72, 66, 255), 12, "SD: %lu (NAND: %lu)", sdTitiles, nandTitles);
+	screen_draw_string(20, 120, 0.41f, 0.41f, COLOUR_SUBJECT, "Installed titles:");
+	width = screen_get_string_width("Installed titles:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "SD: %lu (NAND: %lu)", sdTitiles, nandTitles);
 	
 	u64 homemenuID = 0;
 	Result ret = APT_GetAppletInfo(APPID_HOMEMENU, &homemenuID, NULL, NULL, NULL, NULL);
-	sftd_draw_text(font_r, 20, 136, RGBA8(120, 118, 115, 255), 12, "Homemenu ID:");
+	screen_draw_string(20, 136, 0.41f, 0.41f, COLOUR_SUBJECT, "Homemenu ID:");
+	width = screen_get_string_width("Homemenu ID:", 0.41f, 0.41f);
 	if(ret == 0)
-		sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "Homemenu ID:") + 3), 136, RGBA8(67, 72, 66, 255), 12, "%016llX", homemenuID);
+		screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%016llX", homemenuID);
 	
-	sftd_draw_text(font_r, 20, 152, RGBA8(120, 118, 115, 255), 12, "WiFi signal strength:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "WiFi signal strength:") + 3), 152, RGBA8(67, 72, 66, 255), 12, "%d (%.0lf%%)", osGetWifiStrength(), wifiPercent);
+	screen_draw_string(20, 152, 0.41f, 0.41f, COLOUR_SUBJECT, "WiFi signal strength:");
+	width = screen_get_string_width("WiFi signal strength:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 152, 0.41f, 0.41f, COLOUR_VALUE, "%d (%.0lf%%)", osGetWifiStrength(), wifiPercent);
 	
 	u32 ip = gethostid();
-	sftd_draw_text(font_r, 20, 168, RGBA8(120, 118, 115, 255), 12, "IP:");
-	sftd_draw_textf(font_r, (20 + sftd_get_text_width(font_r, 12, "IP:") + 3), 168, RGBA8(67, 72, 66, 255), 12, "%lu.%lu.%lu.%lu", ip & 0xFF, (ip>>8)&0xFF, (ip>>16)&0xFF, (ip>>24)&0xFF);
+	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "IP:");
+	width = screen_get_string_width("IP:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%lu.%lu.%lu.%lu", ip & 0xFF, (ip>>8)&0xFF, (ip>>16)&0xFF, (ip>>24)&0xFF);
 }
 
 void initServices(void)
@@ -383,26 +450,20 @@ void initServices(void)
 	actInit(SDK(11, 2, 0, 200), 0x20000);
 	socInit((u32*)memalign(0x1000, 0x10000), 0x10000);
 	
-	sf2d_init();
-	sf2d_set_clear_color(RGBA8(0, 0, 0, 255));
-	sf2d_set_vblank_wait(1);
-	
-	sftd_init();
+	gfxInitDefault();
+	gfxSet3D(false);
 	romfsInit();
+	screen_init();
 	
-	topScreen = sfil_load_PNG_file("romfs:/res/topScreen.png", SF2D_PLACE_RAM); setBilinearFilter(topScreen);
-	bottomScreen = sfil_load_PNG_file("romfs:/res/bottomScreen.png", SF2D_PLACE_RAM); setBilinearFilter(bottomScreen);
-	logo = sfil_load_PNG_file("romfs:/res/icon.png", SF2D_PLACE_RAM); setBilinearFilter(logo);
-	drive = sfil_load_PNG_file("romfs:/res/drive.png", SF2D_PLACE_RAM); setBilinearFilter(drive);
-	
-	font_m = sftd_load_font_mem(UbuntuMedium_ttf, UbuntuMedium_ttf_size);
-	font_r = sftd_load_font_mem(UbuntuRegular_ttf, UbuntuRegular_ttf_size);
+	screen_load_texture_file(TEXTURE_BOTTOM_SCREEN_BG, "romfs:/bottomScreen.png", true);
+	screen_load_texture_file(TEXTURE_TOP_SCREEN_BG, "romfs:/topScreen.png", true);
+	screen_load_texture_file(TEXTURE_ICON, "romfs:/icon.png", true);
+	screen_load_texture_file(TEXTURE_DRIVE_ICON, "romfs:/drive.png", true);
 	
 	if (isN3DS())
 		osSetSpeedupEnable(true);
 	
 	// Simply because I don't want the following constantly being checked for in a while loop.
-	
 	strcpy(kernerlVersion, getVersion(0));
 	strcpy(firmVersion, getVersion(1));
 	strcpy(systemVersion, getVersion(2));
@@ -422,16 +483,10 @@ void termServices(void)
 {
 	osSetSpeedupEnable(0);
 	
-	sftd_free_font(font_r);
-	sftd_free_font(font_m);
-	
-	sf2d_free_texture(logo);
-	sf2d_free_texture(bottomScreen);
-	sf2d_free_texture(topScreen);
-	
-	sftd_fini();
+	screen_exit();
 	romfsExit();
-	sf2d_fini();
+	gfxExit();
+	
     socExit();
 	actExit();
 	hidExit();
@@ -450,170 +505,162 @@ void termServices(void)
 	dspExit();
 }
 
-int	touchButton(touchPosition *touch, int MenuSelection)
+int	touchButton(touchPosition *touch, int selection)
 {
 	if (touch->px >= 15 && touch->px <= 300 && touch->py >= 37 && touch->py <= 56)
-		MenuSelection = 1;
+		selection = 1;
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 56 && touch->py <= 73)
-		MenuSelection = 2;
+		selection = 2;
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 73 && touch->py <= 92)
-		MenuSelection = 3;
+		selection = 3;
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 92 && touch->py <= 110)
-		MenuSelection = 4;
+		selection = 4;
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 110 && touch->py <= 127)
-		MenuSelection = 5;
+		selection = 5;
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 127 && touch->py <= 144)
-		MenuSelection = 6;
+		selection = 6;
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 144 && touch->py <= 161)
-		MenuSelection = 7;
+		selection = 7;
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 161 && touch->py <= 178)
-		MenuSelection = 8;
+		selection = 8;
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 178 && touch->py <= 195)	
-		MenuSelection = 9;
+		selection = 9;
 	else if (touch->px >= 15 && touch->px <= 300 && touch->py >= 195 && touch->py <= 212)	
-		MenuSelection = 10;
+		selection = 10;
 	
-	return MenuSelection;
+	return selection;
 }
 
-int main(int argc, char *argv[])
-{      
+int main(int argc, char **argv) 
+{
 	initServices();
 	
-	int MenuSelection = 1; // Pretty obvious
-	int selector_x = 16; //The x position of the first selection
-	int selector_y = 17; //The y position of the first selection
-	int numMenuItems = 10; //Amount of items in the menu
-	int selector_image_x = 0; //Determines the starting x position of the selection
-	int selector_image_y = 0; //Determines the starting y position of the selection
+	int selection = 1;
+	int selector_y = 17; 
+	int selector_image_y = 0;
 	touchPosition touch;
-	
-	while (aptMainLoop())
-    {
-		selector_image_x = selector_x + (selector_xDistance * MenuSelection); //Determines where the selection image is drawn for each selection
-		selector_image_y = selector_y + (selector_yDistance * MenuSelection); //Determines where the selection image is drawn for each selection
-		
+
+	while (aptMainLoop()) 
+	{
 		hidScanInput();
 		hidTouchRead(&touch);
 		u32 kDown = hidKeysDown();
 		u32 kHeld = hidKeysHeld();
 		
-		MenuSelection = touchButton(&touch, MenuSelection);
-		sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+		selection = touchButton(&touch, selection);
 		
-		sf2d_draw_texture(bottomScreen, 0, 0);
-		sf2d_draw_rectangle(selector_image_x, selector_image_y, 286, 18, RGBA8(242, 119, 62, 255));
+		selector_image_y = selector_y + (selector_yDistance * selection);
 		
-		if (MenuSelection == 1)
-			sftd_draw_text(font_m, 22, 37, RGBA8(250, 237, 227, 255), 12, "Kernel Information");
+		screen_begin_frame();
+		
+		screen_select(GFX_TOP);
+		screen_draw_texture(TEXTURE_TOP_SCREEN_BG, 0, 0);
+		screen_draw_texture(TEXTURE_ICON, ((400.0 - screen_get_texture_width(TEXTURE_ICON)) / 2.0), 36);
+		screen_draw_string(5, 2, 0.41f, 0.41f, COLOUR_MAINMENU_HIGHLIGHT, "3DSident v0.7.6");
+		
+		if (selection == 1)
+			kernelMenu();
+		else if (selection == 2)
+			systemMenu();
+		else if (selection == 3)
+			batteryMenu();
+		else if (selection == 4)
+			NNIDInfoMenu();
+		else if (selection == 5)
+			configInfoMenu();
+		else if (selection == 6)
+			hardwareMenu();
+		else if (selection == 7)
+			wifiMenu();
+		else if (selection == 8)
+			storageMenu();
+		else if (selection == 9)
+			miscMenu();
+		
+		screen_select(GFX_BOTTOM);
+		screen_draw_texture(TEXTURE_BOTTOM_SCREEN_BG, 0, 0);
+		screen_draw_rect(16, selector_image_y, 286, 18, RGBA8(242, 119, 62, 255));
+		
+		if (selection == 1)
+			screen_draw_string(22, 38, 0.41f, 0.41f, COLOUR_MAINMENU_HIGHLIGHT, "Kernel Information");
 		else 
-			sftd_draw_text(font_m, 22, 37, RGBA8(78, 74, 67, 255), 12, "Kernel Information");
+			screen_draw_string(22, 38, 0.41f, 0.41f, COLOUR_MAINMENU, "Kernel Information");
 		
-		if (MenuSelection == 2)
-			sftd_draw_text(font_m, 22, 55, RGBA8(250, 237, 227, 255), 12, "System Information");
+		if (selection == 2)
+			screen_draw_string(22, 56, 0.41f, 0.41f, COLOUR_MAINMENU_HIGHLIGHT, "System Information");
 		else
-			sftd_draw_text(font_m, 22, 55, RGBA8(78, 74, 67, 255), 12, "System Information");
+			screen_draw_string(22, 56, 0.41f, 0.41f, COLOUR_MAINMENU, "System Information");
 		
-		if (MenuSelection == 3)
-			sftd_draw_text(font_m, 22, 73, RGBA8(250, 237, 227, 255), 12, "Battery Information");
+		if (selection == 3)
+			screen_draw_string(22, 74, 0.41f, 0.41f, COLOUR_MAINMENU_HIGHLIGHT, "Battery Information");
 		else
-			sftd_draw_text(font_m, 22, 73, RGBA8(78, 74, 67, 255), 12, "Battery Information");
+			screen_draw_string(22, 74, 0.41f, 0.41f, COLOUR_MAINMENU, "Battery Information");
 		
-		if (MenuSelection == 4)
-			sftd_draw_text(font_m, 22, 91, RGBA8(250, 237, 227, 255), 12, "NNID Information");
+		if (selection == 4)
+			screen_draw_string(22, 92, 0.41f, 0.41f, COLOUR_MAINMENU_HIGHLIGHT, "NNID Information");
 		else
-			sftd_draw_text(font_m, 22, 91, RGBA8(78, 74, 67, 255), 12, "NNID Information");
+			screen_draw_string(22, 92, 0.41f, 0.41f, COLOUR_MAINMENU, "NNID Information");
 		
-		if (MenuSelection == 5)
-			sftd_draw_text(font_m, 22, 109, RGBA8(250, 237, 227, 255), 12, "Config Information");
+		if (selection == 5)
+			screen_draw_string(22, 110, 0.41f, 0.41f, COLOUR_MAINMENU_HIGHLIGHT, "Config Information");
 		else
-			sftd_draw_text(font_m, 22, 109, RGBA8(78, 74, 67, 255), 12, "Config Information");
+			screen_draw_string(22, 110, 0.41f, 0.41f, COLOUR_MAINMENU, "Config Information");
 		
-		if (MenuSelection == 6)
-			sftd_draw_text(font_m, 22, 127, RGBA8(250, 237, 227, 255), 12, "Hardware Information");
+		if (selection == 6)
+			screen_draw_string(22, 128, 0.41f, 0.41f, COLOUR_MAINMENU_HIGHLIGHT, "Hardware Information");
 		else
-			sftd_draw_text(font_m, 22, 127, RGBA8(78, 74, 67, 255), 12, "Hardware Information");
+			screen_draw_string(22, 128, 0.41f, 0.41f, COLOUR_MAINMENU, "Hardware Information");
 		
-		if (MenuSelection == 7)
-			sftd_draw_text(font_m, 22, 145, RGBA8(250, 237, 227, 255), 12, "WiFi Information");
+		if (selection == 7)
+			screen_draw_string(22, 146, 0.41f, 0.41f, COLOUR_MAINMENU_HIGHLIGHT, "WiFi Information");
 		else
-			sftd_draw_text(font_m, 22, 145, RGBA8(78, 74, 67, 255), 12, "WiFi Information");
+			screen_draw_string(22, 146, 0.41f, 0.41f, COLOUR_MAINMENU, "WiFi Information");
 		
-		if (MenuSelection == 8)
-			sftd_draw_text(font_m, 22, 163, RGBA8(250, 237, 227, 255), 12, "Storage Information");
+		if (selection == 8)
+			screen_draw_string(22, 164, 0.41f, 0.41f, COLOUR_MAINMENU_HIGHLIGHT, "Storage Information");
 		else
-			sftd_draw_text(font_m, 22, 163, RGBA8(78, 74, 67, 255), 12, "Storage Information");
+			screen_draw_string(22, 164, 0.41f, 0.41f, COLOUR_MAINMENU, "Storage Information");
 		
-		if (MenuSelection == 9)
-			sftd_draw_text(font_m, 22, 181, RGBA8(250, 237, 227, 255), 12, "Miscellaneous");
+		if (selection == 9)
+			screen_draw_string(22, 182, 0.41f, 0.41f, COLOUR_MAINMENU_HIGHLIGHT, "Miscellaneous");
 		else
-			sftd_draw_text(font_m, 22, 181, RGBA8(78, 74, 67, 255), 12, "Miscellaneous");
+			screen_draw_string(22, 182, 0.41f, 0.41f, COLOUR_MAINMENU, "Miscellaneous");
 		
-		if (MenuSelection == 10)
-			sftd_draw_text(font_m, 22, 199, RGBA8(250, 237, 227, 255), 12, "Exit");
+		if (selection == 10)
+			screen_draw_string(22, 200, 0.41f, 0.41f, COLOUR_MAINMENU_HIGHLIGHT, "Exit");
 		else
-			sftd_draw_text(font_m, 22, 199, RGBA8(78, 74, 67, 255), 12, "Exit");
+			screen_draw_string(22, 200, 0.41f, 0.41f, COLOUR_MAINMENU, "Exit");
 		
-		//Added delay to prevent text from appearing 'glitchy' as you scroll past each section.
+		screen_end_frame();
+		
 		if (kDown & KEY_DDOWN)
-			MenuSelection++; //Moves the selector down
+			selection++;
 		else if (kDown & KEY_DUP)
-			MenuSelection--; //Moves the selector up
+			selection--;
 		
 		if (kHeld & KEY_CPAD_DOWN)
 		{
 			svcSleepThread(50000000);
-			MenuSelection++; //Moves the selector down
+			selection++;
 		}
 		else if (kHeld & KEY_CPAD_UP)
 		{
 			svcSleepThread(50000000);
-			MenuSelection--; //Moves the selector up
+			selection--;
 		}
-        
-		if (MenuSelection > numMenuItems) 
-			MenuSelection = 1; //Sets the selection to the first
-		if (MenuSelection < 1) 
-			MenuSelection = numMenuItems; //Sets the selection back to last
 		
-		sf2d_end_frame();
+		if (selection > MAX_ITEMS) 
+			selection = 1;
+		if (selection < 1) 
+			selection = MAX_ITEMS;
 		
-		sf2d_start_frame(GFX_TOP, GFX_LEFT);
-        		
-		sf2d_draw_texture(topScreen, 0, 0);
-		sf2d_draw_texture(logo, 180, 36);
-		
-		sftd_draw_text(font_m, 5, 1, RGBA8(250, 237, 227, 255), 12, "3DSident v0.7.6");
-		
-		if (MenuSelection == 1)
-			kernelMenu();
-		else if (MenuSelection == 2)
-			systemMenu();
-		else if (MenuSelection == 3)
-			batteryMenu();
-		else if (MenuSelection == 4)
-			NNIDInfoMenu();
-		else if (MenuSelection == 5)
-			configInfoMenu();
-		else if (MenuSelection == 6)
-			hardwareMenu();
-		else if (MenuSelection == 7)
-			wifiMenu();
-		else if (MenuSelection == 8)
-			storageMenu();
-		else if (MenuSelection == 9)
-			miscMenu();
-		
-		endDrawing();
-		
-		if (((MenuSelection == 10) && ((kDown & KEY_A) || (kDown & KEY_TOUCH))) || (kDown & KEY_START))
+		if (((selection == 10) && ((kDown & KEY_A) || (kDown & KEY_TOUCH))) || (kDown & KEY_START))
 			break;
 		
 		if ((kHeld & KEY_L) && (kHeld & KEY_R))
 			captureScreenshot();
 	}
-	
+
 	termServices();
-	
-	return 0;	
+	return 0;
 }
