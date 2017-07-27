@@ -483,6 +483,11 @@ void termServices(void)
 {
 	osSetSpeedupEnable(0);
 	
+	screen_unload_texture(TEXTURE_DRIVE_ICON);
+	screen_unload_texture(TEXTURE_ICON);
+	screen_unload_texture(TEXTURE_TOP_SCREEN_BG);
+	screen_unload_texture(TEXTURE_BOTTOM_SCREEN_BG);
+	
 	screen_exit();
 	romfsExit();
 	gfxExit();
