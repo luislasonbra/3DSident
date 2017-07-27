@@ -720,4 +720,6 @@ void screen_draw_rect(float x, float y, float width, float height, u32 color)
 	setupVertices(vertices);
 
 	C3D_DrawArrays(GPU_TRIANGLE_STRIP, 0, 4);
+	
+	screen_set_blend(color, false, false);
 }
