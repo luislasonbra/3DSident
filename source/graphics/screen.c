@@ -1,5 +1,5 @@
+#include "lodepng.h"
 #include "screen.h"
-#include "stb_image.h"
 
 #include "vshader_shbin.h"
 	
@@ -21,8 +21,8 @@ static int uLoc_use_transform;
 static C3D_RenderTarget * target_top;
 static C3D_RenderTarget * target_bottom;
 
-static C3D_Mtx projection_top;
-static C3D_Mtx projection_bottom;
+static C3D_Mtx projectionTop;
+static C3D_Mtx projectionBot;
 
 static C3D_Tex * glyphSheets;
 
@@ -90,16 +90,20 @@ static void screen_set_blend(u32 color, bool rgb, bool alpha)
 	C3D_TexEnvColor(env, color);
 }
 
-static void screen_clear(gfxScreen_t screen, u32 color)
-{	
-	C3D_FrameBufClear(screen == GFX_TOP ? &target_top->frameBuf : &target_bottom->frameBuf, C3D_CLEAR_ALL, color, 0);
-}
-
 void screen_init(void) 
 {	
 	// Initialize Citro3D
 	if(C3D_Init(C3D_DEFAULT_CMDBUF_SIZE * 16))
 		c3d_initialized = true;
+	
+	// Initialize the render targets
+	target_top = C3D_RenderTargetCreate(SCREEN_HEIGHT, TOP_SCREEN_WIDTH, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+	C3D_FrameBufClear(&target_top->frameBuf, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
+	C3D_RenderTargetSetOutput(target_top, GFX_TOP, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
+
+	target_bottom = C3D_RenderTargetCreate(SCREEN_HEIGHT, BOTTOM_SCREEN_WIDTH, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+	C3D_FrameBufClear(&target_bottom->frameBuf, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
+	C3D_RenderTargetSetOutput(target_bottom, GFX_BOTTOM, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
 	
 	mempool_addr = linearAlloc(0x80000);
 	mempool_size = 0x80000;
@@ -110,29 +114,20 @@ void screen_init(void)
 	shaderProgramSetVsh(&program, &vshader_dvlb->DVLE[0]);
 	C3D_BindProgram(&program);
 	
+	// Get the location of the uniforms
 	uLoc_projection = shaderInstanceGetUniformLocation(program.vertexShader, "projection");
 	uLoc_transform = shaderInstanceGetUniformLocation(program.vertexShader, "transform");
 	uLoc_use_transform = shaderInstanceGetUniformLocation(program.vertexShader, "useTransform");
 
 	// Configure attributes for use with the vertex shader
-	// Attribute format and element count are ignored in immediate mode
 	C3D_AttrInfo* attrInfo = C3D_GetAttrInfo();
 	AttrInfo_Init(attrInfo);
 	AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, 3); // v0 = position
 	AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // v2 = texcoord
 	
-	// Initialize the render target
-	target_top = C3D_RenderTargetCreate(TOP_SCREEN_HEIGHT, TOP_SCREEN_WIDTH, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
-	C3D_RenderTargetSetOutput(target_top, GFX_TOP, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
-	screen_clear(GFX_TOP, CLEAR_COLOR);
-
-	target_bottom = C3D_RenderTargetCreate(BOTTOM_SCREEN_HEIGHT, BOTTOM_SCREEN_WIDTH, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
-	C3D_RenderTargetSetOutput(target_bottom, GFX_BOTTOM, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
-	screen_clear(GFX_BOTTOM, CLEAR_COLOR);
-	
 	// Compute the projection matrix (top and bottom screens)
-	Mtx_OrthoTilt(&projection_top, 0.0, TOP_SCREEN_WIDTH, TOP_SCREEN_HEIGHT, 0.0, 0.0, 1.0, true);
-	Mtx_OrthoTilt(&projection_bottom, 0.0, BOTTOM_SCREEN_WIDTH, BOTTOM_SCREEN_HEIGHT, 0.0, 0.0, 1.0, true);
+	Mtx_OrthoTilt(&projectionTop, 0.0, TOP_SCREEN_WIDTH, SCREEN_HEIGHT, 0.0, 0.0, 1.0, true);
+	Mtx_OrthoTilt(&projectionBot, 0.0, BOTTOM_SCREEN_WIDTH, SCREEN_HEIGHT, 0.0, 0.0, 1.0, true);
 
 	C3D_CullFace(GPU_CULL_NONE);
 	
@@ -149,10 +144,9 @@ void screen_init(void)
 		return;
 
 	// Load the glyph texture sheets
-	int i;
+	int i = 0;
 	TGLP_s* glyphInfo = fontGetGlyphInfo();
-	glyphSheets = malloc(sizeof(C3D_Tex)*glyphInfo->nSheets);
-	
+	glyphSheets = malloc(sizeof(C3D_Tex) * glyphInfo->nSheets);
 	for (i = 0; i < glyphInfo->nSheets; i ++)
 	{
 		C3D_Tex * tex = &glyphSheets[i];
@@ -211,6 +205,16 @@ void screen_exit(void)
 	}
 }
 
+void screen_clear(gfxScreen_t screen, u32 color)
+{	
+	color = ((color>>24)&0x000000FF) | ((color>>8)&0x0000FF00) | ((color<<8)&0x00FF0000) | ((color<<24)&0xFF000000); // reverse byte order
+	
+	if (screen == GFX_TOP)
+		C3D_RenderTargetSetClear(target_top, C3D_CLEAR_ALL, color, 0);
+	else
+		C3D_RenderTargetSetClear(target_bottom, C3D_CLEAR_ALL, color, 0);
+}
+
 void screen_set_base_alpha(u8 alpha) 
 {
 	base_alpha = alpha;
@@ -262,7 +266,7 @@ static void screen_prepare_texture(u32* pow2WidthOut, u32* pow2HeightOut, u32 id
 	if(pow2Height < 64)
         pow2Height = 64;
 
-	if(textures[id].tex.data != NULL && (textures[id].tex.width != pow2Width || textures[id].tex.height != pow2Height || textures[id].tex.fmt != format)) 
+	if(textures[id].tex.data != NULL && ((textures[id].tex.width != pow2Width) || (textures[id].tex.height != pow2Height) || (textures[id].tex.fmt != format))) 
 	{
 		C3D_TexDelete(&textures[id].tex);
 		textures[id].tex.data = NULL;
@@ -332,24 +336,20 @@ void screen_load_texture_untiled(u32 id, void* data, u32 size, u32 width, u32 he
 	C3D_TexFlush(&textures[id].tex);
 }
 
-void screen_load_texture_file(u32 id, const char* path, bool linearFilter) 
+void screen_load_texture_png(u32 id, const char* path, bool linearFilter) 
 {
 	if(id >= MAX_TEXTURES) 
 		return;
 
-	FILE * fd = fopen(path, "rb");
-	if(fd == NULL)
+	unsigned char * image;
+	unsigned width = 0, height = 0;
+
+	lodepng_decode32_file(&image, &width, &height, path);
+
+	if(image == NULL)
 		return;
 
-	int width;
-	int height;
-	int depth;
-	u8* image = stbi_load_from_file(fd, &width, &height, &depth, STBI_rgb_alpha);
-	fclose(fd);
-
-	if((image == NULL) || (depth != STBI_rgb_alpha))
-		return;
-
+	// lodepng outputs big endian rgba so we need to convert
 	for(u32 x = 0; x < width; x++) 
 	{
 		for(u32 y = 0; y < height; y++) 
@@ -416,7 +416,7 @@ void screen_select(gfxScreen_t screen)
 		return;
 
 	// Get the location of the uniforms
-	C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, shaderInstanceGetUniformLocation(program.vertexShader, "projection"), screen == GFX_TOP ? &projection_top : &projection_bottom);
+	C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, screen == GFX_TOP ? &projectionTop : &projectionBot);
 }
 
 static void screen_draw_quad(float x1, float y1, float x2, float y2, float left, float bottom, float right, float top) 
@@ -583,7 +583,7 @@ static void setTextColor(u32 color)
 	C3D_TexEnvColor(env, color);
 }
 
-static void screen_draw_string_internal(const char * text, float x, float y, float scaleX, float scaleY, u32 color, bool wrap, float wrapX) 
+static void screen_draw_string_internal(const char * text, float x, float y, float scaleX, float scaleY, u32 color, bool wrap, bool baseline, float wrapX) 
 {
 	if(text == NULL)
 		return;
@@ -596,32 +596,41 @@ static void screen_draw_string_internal(const char * text, float x, float y, flo
 	float lineWidth;
 	screen_get_string_size_internal(&lineWidth, NULL, text, scaleX, scaleY, true, wrap, wrapX - x);
 
-	float currX = x;
-
+	ssize_t  units;
+	uint32_t code;
+	
+	const uint8_t * p = (const uint8_t *)text;
+	const uint8_t * lastAlign = p;
+	float firstX = x;
+	u32 flags = GLYPH_POS_CALC_VTXCOORD | (baseline ? GLYPH_POS_AT_BASELINE : 0);
 	int lastSheet = -1;
-
-	const uint8_t* p = (const uint8_t*) text;
-	const uint8_t* lastAlign = p;
-	u32 code = 0;
-	ssize_t units = -1;
-	while(*p && (units = decode_utf8(&code, p)) != -1 && code > 0) 
+	
+	do
 	{
+		if (!*p) 
+			break;
+		
+		units = decode_utf8(&code, p);
+		
+		if (units == -1)
+			break;
+		
 		p += units;
 
-		if(code == '\n' || (wrap && currX + scaleX * fontGetCharWidthInfo(fontGlyphIndexFromCodePoint(code))->charWidth >= wrapX)) 
+		if((code == '\n') || (wrap && firstX + scaleX * fontGetCharWidthInfo(fontGlyphIndexFromCodePoint(code))->charWidth >= wrapX)) 
 		{
 			lastAlign = p;
 
 			screen_get_string_size_internal(&lineWidth, NULL, (const char*) p, scaleX, scaleY, true, wrap, wrapX - x);
-
-			currX = x;
-
-			y += scaleY * fontGetInfo()->lineFeed;
+			
+			firstX = x;
+			y += scaleY*fontGetInfo()->lineFeed;
 		}
 
 		if(code != '\n') 
 		{
 			u32 num = 1;
+			
 			if(code == '\t') 
 			{
 				code = ' ';
@@ -631,7 +640,7 @@ static void screen_draw_string_internal(const char * text, float x, float y, flo
 			}
 
 			fontGlyphPos_s data;
-			fontCalcGlyphPos(&data, fontGlyphIndexFromCodePoint(code), GLYPH_POS_CALC_VTXCOORD, scaleX, scaleY);
+			fontCalcGlyphPos(&data, fontGlyphIndexFromCodePoint(code), flags, scaleX, scaleY);
 
 			if(data.sheetIndex != lastSheet) 
 			{
@@ -641,19 +650,19 @@ static void screen_draw_string_internal(const char * text, float x, float y, flo
 
 			for(u32 i = 0; i < num; i++) 
 			{
-				screen_draw_quad(currX + data.vtxcoord.left, y + data.vtxcoord.top, currX + data.vtxcoord.right, y + data.vtxcoord.bottom, data.texcoord.left, data.texcoord.bottom, data.texcoord.right, data.texcoord.top);
+				screen_draw_quad(firstX + data.vtxcoord.left, y + data.vtxcoord.top, firstX + data.vtxcoord.right, y + data.vtxcoord.bottom, data.texcoord.left, data.texcoord.bottom, data.texcoord.right, data.texcoord.top);
 
-				currX += data.xAdvance;
+				firstX += data.xAdvance;
 			}
 		}
-	}
+	} while (code > 0);
 	
 	screen_set_blend(0, false, false);
 }
 
 void screen_draw_string(float x, float y, float scaleX, float scaleY, u32 color, const char * text) 
 {
-	screen_draw_string_internal(text, x, y, scaleX, scaleY, color, false, 0);
+	screen_draw_string_internal(text, x, y, scaleX, scaleY, color, false, false, 0);
 }
 
 void screen_draw_stringf(float x, float y, float scaleX, float scaleY, u32 color, const char * text, ...) 
@@ -662,13 +671,13 @@ void screen_draw_stringf(float x, float y, float scaleX, float scaleY, u32 color
 	va_list args;
 	va_start(args, text);
 	vsnprintf(buffer, 256, text, args);
-	screen_draw_string_internal(buffer, x, y, scaleX, scaleY, color, false, 0);
+	screen_draw_string_internal(buffer, x, y, scaleX, scaleY, color, false, false, 0);
 	va_end(args);
 }
 
 void screen_draw_string_wrap(float x, float y, float scaleX, float scaleY, u32 color, float wrapX, const char * text) 
 {
-	screen_draw_string_internal(text, x, y, scaleX, scaleY, color, true, wrapX);
+	screen_draw_string_internal(text, x, y, scaleX, scaleY, color, true, false, wrapX);
 }
 
 static void * screen_pool_memalign(u32 size, u32 alignment)

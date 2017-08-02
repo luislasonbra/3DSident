@@ -1,43 +1,33 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
+#include <3ds.h>
+#include <citro3d.h>
+
 #include <errno.h>
 #include <malloc.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <3ds.h>
-#include <citro3d.h>
+#define TOP_SCREEN_WIDTH			400
+#define BOTTOM_SCREEN_WIDTH			320
 
-#define TOP_SCREEN_WIDTH 			400
-#define TOP_SCREEN_HEIGHT 			240
-
-#define BOTTOM_SCREEN_WIDTH 		320
-#define BOTTOM_SCREEN_HEIGHT 		240
+#define SCREEN_HEIGHT				240
 
 #define MAX_TEXTURES 				1024
 
-#define TEXTURE_BOTTOM_SCREEN_BG 	0
-#define TEXTURE_TOP_SCREEN_BG 		1
-#define TEXTURE_ICON 				2
-#define TEXTURE_DRIVE_ICON 			3
-
 #define RGBA8(r, g, b, a) 			((((a)&0xFF)<<24) | (((b)&0xFF)<<16) | (((g)&0xFF)<<8) | (((r)&0xFF)<<0))
 
-#define COLOUR_MAINMENU 			RGBA8(78, 74, 67, 255)
-#define COLOUR_MAINMENU_HIGHLIGHT 	RGBA8(250, 237, 227, 255)
-#define COLOUR_MENU 				RGBA8(0, 0, 0, 255)
-#define COLOUR_SUBJECT 				RGBA8(120, 118, 115, 255)
-#define COLOUR_VALUE 				RGBA8(67, 72, 66, 255)
 #define CLEAR_COLOR 				0x000000FF
 
 void screen_init(void);
 void screen_exit(void);
+void screen_clear(gfxScreen_t screen, u32 color);
 void screen_set_base_alpha(u8 alpha);
 u32 screen_allocate_free_texture(void);
 void screen_load_texture_untiled(u32 id, void* data, u32 size, u32 width, u32 height, GPU_TEXCOLOR format, bool linearFilter);
-void screen_load_texture_file(u32 id, const char* path, bool linearFilter);
+void screen_load_texture_png(u32 id, const char* path, bool linearFilter);
 void screen_load_texture_tiled(u32 id, void* data, u32 size, u32 width, u32 height, GPU_TEXCOLOR format, bool linearFilter);
 void screen_unload_texture(u32 id);
 void screen_get_texture_size(u32* width, u32* height, u32 id);

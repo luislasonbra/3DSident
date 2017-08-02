@@ -22,6 +22,17 @@
 
 #define SDK(a, b, c, d) ((a<<24) | (b<<16) | (c<<8) | d)
 
+#define TEXTURE_BOTTOM_SCREEN_BG	0
+#define TEXTURE_TOP_SCREEN_BG		1
+#define TEXTURE_ICON				2
+#define TEXTURE_DRIVE_ICON			3
+
+#define COLOUR_MAINMENU				RGBA8(78, 74, 67, 255)
+#define COLOUR_MAINMENU_HIGHLIGHT	RGBA8(250, 237, 227, 255)
+#define COLOUR_MENU					RGBA8(0, 0, 0, 255)
+#define COLOUR_SUBJECT				RGBA8(120, 118, 115, 255)
+#define COLOUR_VALUE				RGBA8(67, 72, 66, 255)
+
 char kernerlVersion[100], systemVersion[100], firmVersion[100], sdmcCID[33], nandCID[33], username[15], birthday[6], eulaVer[6], pin[6], email[512];
 u32 sdTitiles;
 u32 nandTitles;
@@ -139,6 +150,9 @@ void NNIDInfoMenu(void)
 	
 	AccountDataBlock accountDataBlock;
 	ACTU_GetAccountDataBlock((u8*)&accountDataBlock, 0xA0, 0x11);
+	
+	MiiData miiData;
+	ACTU_GetAccountDataBlock((u8*)&miiData, 0x60, 0x7);
 
 	width = screen_get_string_width("NNID Menu", 0.41f, 0.41f);
 	screen_draw_string(((400 - width) / 2), 90, 0.41f, 0.41f, COLOUR_MENU, "NNID Menu");
@@ -151,7 +165,7 @@ void NNIDInfoMenu(void)
 	utf2ascii(name, accountDataBlock.miiName);
 	screen_draw_string(20, 136, 0.41f, 0.41f, COLOUR_SUBJECT, "Mii name:");
 	width = screen_get_string_width("Mii name:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%s", name);
+	screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%s (%u)", name, miiData.miiID);
 	
 	ACTU_GetAccountDataBlock(&principalID, 0x4, 0xC);
 	screen_draw_string(20, 152, 0.41f, 0.41f, COLOUR_SUBJECT, "Principal ID:");
@@ -455,10 +469,10 @@ void initServices(void)
 	romfsInit();
 	screen_init();
 	
-	screen_load_texture_file(TEXTURE_BOTTOM_SCREEN_BG, "romfs:/bottomScreen.png", true);
-	screen_load_texture_file(TEXTURE_TOP_SCREEN_BG, "romfs:/topScreen.png", true);
-	screen_load_texture_file(TEXTURE_ICON, "romfs:/icon.png", true);
-	screen_load_texture_file(TEXTURE_DRIVE_ICON, "romfs:/drive.png", true);
+	screen_load_texture_png(TEXTURE_BOTTOM_SCREEN_BG, "romfs:/bottomScreen.png", true);
+	screen_load_texture_png(TEXTURE_TOP_SCREEN_BG, "romfs:/topScreen.png", true);
+	screen_load_texture_png(TEXTURE_ICON, "romfs:/icon.png", true);
+	screen_load_texture_png(TEXTURE_DRIVE_ICON, "romfs:/drive.png", true);
 	
 	if (isN3DS())
 		osSetSpeedupEnable(true);
