@@ -3,17 +3,12 @@
 
 const char * getUsername(void) 
 {
-	int i = 0;
-	size_t size = 0x16;
-	u8 * data = (u8*)malloc(size);
-	char * username = (char*)malloc(size / 2);
-	
-	for(i = 0; i < (size / 2); i++)
-		username[i] = 0;
-	
+	u8 * data = (u8*)malloc(28);
+	char * username = (char*)malloc(0x13);
+    
 	CFGU_GetConfigInfoBlk2(0x1C, 0x000A0000, data);
-	
-	for(i = 0; i < (size / 2); i++)
+
+	for (int i = 0; i < 0x13; i++)
 		username[i] = (char)((u16*)data)[i];
 	
 	return username;
