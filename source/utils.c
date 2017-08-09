@@ -1,10 +1,5 @@
 #include "utils.h"
 
-void setBilinearFilter(sf2d_texture *texture)
-{
-	sf2d_texture_set_params(texture, GPU_TEXTURE_MAG_FILTER(GPU_LINEAR) | GPU_TEXTURE_MIN_FILTER(GPU_NEAREST));
-}
-
 void getSizeString(char *string, uint64_t size) //Thanks TheOfficialFloW
 {
 	double double_size = (double)size;
@@ -28,12 +23,6 @@ bool isN3DS(void)
 		return true;
 	else
 		return false;
-}
-
-void endDrawing(void)
-{
-	sf2d_end_frame();
-	sf2d_swapbuffers();
 }
 
 void utf2ascii(char* dst, u16* src)
