@@ -1,3 +1,7 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
 #include "utils.h"
 
 void getSizeString(char *string, uint64_t size) //Thanks TheOfficialFloW
@@ -17,21 +21,26 @@ void getSizeString(char *string, uint64_t size) //Thanks TheOfficialFloW
 bool isN3DS(void)
 {
 	bool isNew3DS = 0;
-	APT_CheckNew3DS(&isNew3DS);
-    
-	if (isNew3DS)
-		return true;
-	else
-		return false;
+	
+	if (R_SUCCEEDED(APT_CheckNew3DS(&isNew3DS)))
+	{
+		if (isNew3DS)
+			return true;
+		else
+			return false;
+	}
+	
+	return false;
 }
 
-void utf2ascii(char* dst, u16* src)
+void u16_to_u8(char * buf, const u16 * input, size_t bufsize)
 {
-	if(!src || !dst)
-		return;
+	ssize_t units = utf16_to_utf8((u8 *)buf, input, bufsize);
 	
-	while(*src)*(dst++)=(*(src++))&0xFF;
-	*dst=0x00;
+	if (units < 0) 
+		units = 0;
+	
+	buf[units] = 0;
 }
 
 // Crashes doesn't work. Leavign it here for anyone who's interested.

@@ -1,17 +1,20 @@
 #include <3ds.h>
 #include <citro3d.h>
 
+#include "ac.h"
 #include "actu.h"
 #include "am.h"
 #include "cfgs.h"
 #include "config.h"
 #include "fs.h"
+#include "hardware.h"
 #include "kernel.h"
 #include "mcu.h"
 #include "misc.h"
 #include "power.h"
 #include "screen.h"
 #include "screenshot.h"
+#include "storage.h"
 #include "system.h"
 #include "utils.h"
 #include "wifi.h"
@@ -33,9 +36,8 @@
 #define COLOUR_SUBJECT				RGBA8(120, 118, 115, 255)
 #define COLOUR_VALUE				RGBA8(67, 72, 66, 255)
 
-char kernerlVersion[100], systemVersion[100], firmVersion[100], sdmcCID[33], nandCID[33], username[15], birthday[6], eulaVer[6], pin[6], email[512];
-u32 sdTitiles;
-u32 nandTitles;
+char kernerlVersion[100], systemVersion[100], firmVersion[100];
+static u32 sdTitiles = 0, nandTitles = 0;
 
 void kernelMenu(void)
 {	
@@ -58,15 +60,15 @@ void kernelMenu(void)
 	
 	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "SDMC CID:");
 	width = screen_get_string_width("SDMC CID:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%s", sdmcCID);
+	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%s", getSdmcCid());
 
 	screen_draw_string(20, 184, 0.41f, 0.41f, COLOUR_SUBJECT, "NAND CID:");
 	width = screen_get_string_width("NAND CID:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%s", nandCID);
+	screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%s", getNandCid());
 	
 	screen_draw_string(20, 200, 0.41f, 0.41f, COLOUR_SUBJECT, "Device ID:");
 	width = screen_get_string_width("Device ID:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 200, 0.41f, 0.41f, COLOUR_VALUE, "%lu", getDeviceId());
+	screen_draw_stringf((20 + width + 3), 200, 0.41f, 0.41f, COLOUR_VALUE, "%lu", getDeviceID());
 }
 
 void systemMenu(void)
@@ -109,44 +111,43 @@ void batteryMenu(void)
 {
 	float width = 0;
 	
-	u8 batteryPercent = 0, batteryVolt = 0, mcuFwMajor = 0, mcuFwMinor = 0;
+	u8 batteryPercent = 0, batteryVolt = 0, fwVerHigh = 0, fwVerLow = 0;
 	bool isConnected = false;
 	
 	width = screen_get_string_width("Battery Menu", 0.41f, 0.41f);
 	screen_draw_string(((400 - width) / 2), 90, 0.41f, 0.41f, COLOUR_MENU, "Battery Menu");
 	
-	mcuGetBatteryLevel(&batteryPercent);
 	screen_draw_string(20, 120, 0.41f, 0.41f, COLOUR_SUBJECT, "Battery percentage:");
 	width = screen_get_string_width("Battery percentage:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "%3d%%", batteryPercent);
+	if (R_SUCCEEDED(MCU_GetBatteryLevel(&batteryPercent)))
+		screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "%3d%%", batteryPercent);
 	
 	screen_draw_string(20, 136, 0.41f, 0.41f, COLOUR_SUBJECT, "Battery status:");
 	width = screen_get_string_width("Battery status:", 0.41f, 0.41f);
 	screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%s", batteryStatus());
 	
-	mcuGetBatteryVoltage(&batteryVolt);
 	screen_draw_string(20, 152, 0.41f, 0.41f, COLOUR_SUBJECT, "Battery voltage:");
 	width = screen_get_string_width("Battery voltage:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 152, 0.41f, 0.41f, COLOUR_VALUE, "%d (%.1f V)", batteryVolt, 5.0 * ((double)batteryVolt / 256.0));
+	if (R_SUCCEEDED(MCU_GetBatteryVoltage(&batteryVolt)))
+		screen_draw_stringf((20 + width + 3), 152, 0.41f, 0.41f, COLOUR_VALUE, "%d (%.1f V)", batteryVolt, 5.0 * ((double)batteryVolt / 256.0));
 	
-	PTMU_GetAdapterState(&isConnected);
 	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "Adapter state:");
 	width = screen_get_string_width("Adapter state:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%s", isConnected? "connected" : "disconnected");
+	if (R_SUCCEEDED(PTMU_GetAdapterState(&isConnected)))
+		screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%s", isConnected? "connected" : "disconnected");
 	
-	GetMcuFwVerHigh(&mcuFwMajor);
-	GetMcuFwVerLow(&mcuFwMinor);
 	//if (CFG_UNITINFO == 0)
 	screen_draw_string(20, 184, 0.41f, 0.41f, COLOUR_SUBJECT, "MCU firmware:");
 	width = screen_get_string_width("MCU firmware:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%u.%u", (mcuFwMajor - 16), mcuFwMinor);
+	if ((R_SUCCEEDED(MCU_GetFwVerHigh(&fwVerHigh))) && (R_SUCCEEDED(MCU_GetFwVerLow(&fwVerLow))))
+		screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%u.%u", (fwVerHigh - 0x10), fwVerLow);
 }
 
 void NNIDInfoMenu(void)
 {	
 	float width = 0;
 	u32 principalID = 0;
-	char name[0x16];
+	char country[0x3], name[0x16], nnid[0x11], timeZone[0x41];
 	
 	AccountDataBlock accountDataBlock;
 	ACTU_GetAccountDataBlock((u8*)&accountDataBlock, 0xA0, 0x11);
@@ -160,17 +161,18 @@ void NNIDInfoMenu(void)
 	// getNNIDInfo(0x11, 0x8), getNNIDInfo(0x11, 0x1C), getNNIDInfo(0x11, 0x15) are all the same.
 	screen_draw_string(20, 120, 0.41f, 0.41f, COLOUR_SUBJECT, "NNID:");
 	width = screen_get_string_width("NNID:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "%s", getNNIDInfo(0x11, 0x8));
+	if (R_SUCCEEDED(ACTU_GetAccountDataBlock(nnid, 0x11, 0x8)))
+		screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "%s", nnid);
 
-	utf2ascii(name, accountDataBlock.miiName);
+	u16_to_u8(name, accountDataBlock.miiName, 0x16);
 	screen_draw_string(20, 136, 0.41f, 0.41f, COLOUR_SUBJECT, "Mii name:");
 	width = screen_get_string_width("Mii name:", 0.41f, 0.41f);
 	screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%s (%u)", name, miiData.miiID);
 	
-	ACTU_GetAccountDataBlock(&principalID, 0x4, 0xC);
 	screen_draw_string(20, 152, 0.41f, 0.41f, COLOUR_SUBJECT, "Principal ID:");
 	width = screen_get_string_width("Principal ID:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 152, 0.41f, 0.41f, COLOUR_VALUE, "%u", principalID);
+	if (R_SUCCEEDED(ACTU_GetAccountDataBlock(&principalID, 0x4, 0xC)))
+		screen_draw_stringf((20 + width + 3), 152, 0.41f, 0.41f, COLOUR_VALUE, "%u", principalID);
 	
 	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "Persistent ID:");
 	width = screen_get_string_width("Persistent ID:", 0.41f, 0.41f);
@@ -182,49 +184,45 @@ void NNIDInfoMenu(void)
 	
 	screen_draw_string(20, 200, 0.41f, 0.41f, COLOUR_SUBJECT, "Country:");
 	width = screen_get_string_width("Country:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 200, 0.41f, 0.41f, COLOUR_VALUE, "%s", getNNIDInfo(0x3, 0xB));
+	if (R_SUCCEEDED(ACTU_GetAccountDataBlock(country, 0x3, 0xB)))
+		screen_draw_stringf((20 + width + 3), 200, 0.41f, 0.41f, COLOUR_VALUE, "%s", country);
 	
 	screen_draw_string(20, 216, 0.41f, 0.41f, COLOUR_SUBJECT, "Time Zone:");
 	width = screen_get_string_width("Time Zone:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 216, 0.41f, 0.41f, COLOUR_VALUE, "%s", getNNIDInfo(0x41, 0x1E));
+	if (R_SUCCEEDED(ACTU_GetAccountDataBlock(timeZone, 0x41, 0x1E)))
+		screen_draw_stringf((20 + width + 3), 216, 0.41f, 0.41f, COLOUR_VALUE, "%s", timeZone);
 }
 
 void configInfoMenu(void)
 {
 	float width = 0;
-	u8 answer[0x21] = {0};
 	
 	width = screen_get_string_width("Config Menu", 0.41f, 0.41f);
 	screen_draw_string(((400 - width) / 2), 90, 0.41f, 0.41f, COLOUR_MENU, "Config Menu");
 	
 	screen_draw_string(20, 120, 0.41f, 0.41f, COLOUR_SUBJECT, "Username:");
 	width = screen_get_string_width("Username:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "%s", username);
+	screen_draw_wstring((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, getUsername());
 	
 	screen_draw_string(20, 136, 0.41f, 0.41f, COLOUR_SUBJECT, "Birthday:");
 	width = screen_get_string_width("Birthday:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%s", birthday);
+	screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%s", getBirthday());
 	
 	screen_draw_string(20, 152, 0.41f, 0.41f, COLOUR_SUBJECT, "EULA version:");
 	width = screen_get_string_width("EULA version:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 152, 0.41f, 0.41f, COLOUR_VALUE, "%s", eulaVer);
+	screen_draw_stringf((20 + width + 3), 152, 0.41f, 0.41f, COLOUR_VALUE, "%s", getEulaVersion());
 	
 	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "Parental control pin:");
 	width = screen_get_string_width("Parental control pin:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%s", pin);
+	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%s", getParentalPin());
 	
 	screen_draw_string(20, 184, 0.41f, 0.41f, COLOUR_SUBJECT, "Parental control email:");
 	width = screen_get_string_width("Parental control email:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%s", email);
+	screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%s", getParentalEmail());
 	
-	getParentalSecretAnswer(answer);
 	screen_draw_string(20, 200, 0.41f, 0.41f, COLOUR_SUBJECT, "Parental control answer:");
 	width = screen_get_string_width("Parental control answer:", 0.41f, 0.41f);
-	
-	if (!answer[0])
-		screen_draw_string((20 + width + 3), 200, 0.41f, 0.41f, COLOUR_VALUE, "(null)");
-	else
-		screen_draw_stringf((20 + width + 3), 200, 0.41f, 0.41f, COLOUR_VALUE, "%s\n", answer + 1);
+	screen_draw_stringf((20 + width + 3), 200, 0.41f, 0.41f, COLOUR_VALUE, "%s", (getParentalSecretAnswer() + 1));
 	
 	/*screen_draw_string(20, 216, 0.41f, 0.41f, COLOUR_SUBJECT, "Debug mode:");
 	width = screen_get_string_width("Country:", 0.41f, 0.41f);
@@ -240,10 +238,10 @@ void hardwareMenu(void)
 	width = screen_get_string_width("Hardware Menu", 0.41f, 0.41f);
 	screen_draw_string(((400 - width) / 2), 90, 0.41f, 0.41f, COLOUR_MENU, "Hardware Menu");
 	
-	DSP_GetHeadphoneStatus(&hpInserted);
 	screen_draw_string(20, 120, 0.41f, 0.41f, COLOUR_SUBJECT, "Headphone status:");
 	width = screen_get_string_width("Headphone status:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "%s", hpInserted? "inserted" : "not inserted");
+	if (R_SUCCEEDED(DSP_GetHeadphoneStatus(&hpInserted)))
+		screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "%s", hpInserted? "inserted" : "not inserted");
 	
 	screen_draw_string(20, 136, 0.41f, 0.41f, COLOUR_SUBJECT, "Card slot status:");
 	width = screen_get_string_width("Card slot status:", 0.41f, 0.41f);
@@ -253,11 +251,11 @@ void hardwareMenu(void)
 	width = screen_get_string_width("SDMC status:", 0.41f, 0.41f);
 	screen_draw_stringf((20 + width + 3), 152, 0.41f, 0.41f, COLOUR_VALUE, "%s", detectSD()? "detected" : "not detected");
 	
-	HIDUSER_GetSoundVolume(&volume);
 	double volPercent = (volume * 1.5873015873);
 	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "Volume slider state:");
 	width = screen_get_string_width("Volume slider state:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%d (%.0lf%%)", volume, volPercent);
+	if (R_SUCCEEDED(HIDUSER_GetSoundVolume(&volume)))
+		screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%d (%.0lf%%)", volume, volPercent);
 	
 	double _3dSliderPercent = (osGet3DSliderState() * 100.0);
 	screen_draw_string(20, 184, 0.41f, 0.41f, COLOUR_SUBJECT, "3D slider state:");
@@ -276,7 +274,7 @@ void wifiMenu(void)
 	wifiSlotStructure slotData;
 	
 	Result wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 0, (u8*)&slotData);
-	if ((!wifiRet) && (slotData.set))
+	if ((R_SUCCEEDED(wifiRet)) && (slotData.set))
 	{
 		screen_draw_rect(15, 27, 370, 70, RGBA8(180, 180, 178, 255));
 		screen_draw_rect(16, 28, 368, 68, RGBA8(255, 255, 253, 255));
@@ -285,18 +283,18 @@ void wifiMenu(void)
 		if (slotData.network.use) 
 		{
 			screen_draw_stringf(20, 46, 0.41f, 0.41f, COLOUR_VALUE, "SSID: %s", slotData.network.SSID);
-			screen_draw_stringf(20, 62, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s", slotData.network.passphrase);
+			screen_draw_stringf(20, 62, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s (%s)", slotData.network.passphrase, getSecurityMode());
 		}
 		else if (slotData.network_WPS.use) 
 		{
 			screen_draw_stringf(20, 46, 0.41f, 0.41f, COLOUR_VALUE, "SSID: %s", slotData.network_WPS.SSID);
-			screen_draw_stringf(20, 62, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s", slotData.network_WPS.passphrase);
+			screen_draw_stringf(20, 62, 0.41f, 0.41f, COLOUR_VALUE, "Pass: (%s)", getSecurityMode());
 		}
 		screen_draw_stringf(20, 78, 0.41f, 0.41f, COLOUR_VALUE, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
 	}
 	
 	wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 1, (u8*)&slotData);
-	if ((!wifiRet) && (slotData.set))
+	if ((R_SUCCEEDED(wifiRet)) && (slotData.set))
 	{
 		screen_draw_rect(15, 95, 370, 70, RGBA8(180, 180, 178, 255));
 		screen_draw_rect(16, 96, 368, 68, RGBA8(255, 255, 253, 255));
@@ -305,18 +303,18 @@ void wifiMenu(void)
 		if (slotData.network.use) 
 		{
 			screen_draw_stringf(20, 114, 0.41f, 0.41f, COLOUR_VALUE, "SSID: %s", slotData.network.SSID);
-			screen_draw_stringf(20, 130, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s", slotData.network.passphrase);
+			screen_draw_stringf(20, 130, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s (%s)", slotData.network.passphrase, getSecurityMode());
 		}
 		else if (slotData.network_WPS.use) 
 		{
 			screen_draw_stringf(20, 114, 0.41f, 0.41f, COLOUR_VALUE, "SSID: %s", slotData.network_WPS.SSID);
-			screen_draw_stringf(20, 130, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s", slotData.network_WPS.passphrase);
+			screen_draw_stringf(20, 130, 0.41f, 0.41f, COLOUR_VALUE, "Pass: (%s)", getSecurityMode());
 		}
 		screen_draw_stringf(20, 146, 0.41f, 0.41f, COLOUR_VALUE, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
 	}
 	
 	wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 2, (u8*)&slotData);
-	if ((!wifiRet) && (slotData.set))
+	if ((R_SUCCEEDED(wifiRet)) && (slotData.set))
 	{
 		screen_draw_rect(15, 163, 370, 70, RGBA8(180, 180, 178, 255));
 		screen_draw_rect(16, 164, 368, 68, RGBA8(255, 255, 253, 255));
@@ -325,12 +323,12 @@ void wifiMenu(void)
 		if (slotData.network.use) 
 		{
 			screen_draw_stringf(20, 182, 0.41f, 0.41f, COLOUR_VALUE, "SSID: %s", slotData.network.SSID);
-			screen_draw_stringf(20, 198, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s", slotData.network.passphrase);
+			screen_draw_stringf(20, 198, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s (%s)", slotData.network.passphrase, getSecurityMode());
 		}
 		else if (slotData.network_WPS.use) 
 		{
 			screen_draw_stringf(20, 182, 0.41f, 0.41f, COLOUR_VALUE, "SSID: %s", slotData.network_WPS.SSID);
-			screen_draw_stringf(20, 198, 0.41f, 0.41f, COLOUR_VALUE, "Pass: %s", slotData.network_WPS.passphrase);
+			screen_draw_stringf(20, 198, 0.41f, 0.41f, COLOUR_VALUE, "Pass: (%s)", getSecurityMode());
 		}
 		screen_draw_stringf(20, 214, 0.41f, 0.41f, COLOUR_VALUE, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
 	}
@@ -421,6 +419,7 @@ void miscMenu(void)
 {	
 	float width = 0;
 	double wifiPercent = (osGetWifiStrength() * 33.3333333333);
+	u64 homemenuID = 0;
 	
 	width = screen_get_string_width("Miscellaneous", 0.41f, 0.41f);
 	screen_draw_string(((400 - width) / 2), 90, 0.41f, 0.41f, COLOUR_MENU, "Miscellaneous");
@@ -429,11 +428,9 @@ void miscMenu(void)
 	width = screen_get_string_width("Installed titles:", 0.41f, 0.41f);
 	screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "SD: %lu (NAND: %lu)", sdTitiles, nandTitles);
 	
-	u64 homemenuID = 0;
-	Result ret = APT_GetAppletInfo(APPID_HOMEMENU, &homemenuID, NULL, NULL, NULL, NULL);
 	screen_draw_string(20, 136, 0.41f, 0.41f, COLOUR_SUBJECT, "Homemenu ID:");
 	width = screen_get_string_width("Homemenu ID:", 0.41f, 0.41f);
-	if(ret == 0)
+	if (R_SUCCEEDED(APT_GetAppletInfo(APPID_HOMEMENU, &homemenuID, NULL, NULL, NULL, NULL)))
 		screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%016llX", homemenuID);
 	
 	screen_draw_string(20, 152, 0.41f, 0.41f, COLOUR_SUBJECT, "WiFi signal strength:");
@@ -448,21 +445,23 @@ void miscMenu(void)
 
 void initServices(void)
 {
-	dspInit();
+	acGetServiceHandle();
+	actInit(SDK(11, 2, 0, 200), 0x20000);
+	amAppInit();
+	amInit(); 
+	aptInit();
 	cfguInit();
 	cfgsInit();
+	dspInit();
+	hidInit();
+	mcuInit();
+	psInit();
+	ptmuInit();
+	socInit((u32*)memalign(0x1000, 0x10000), 0x10000);
+	
 	fsInit();
 	sdmcInit();
 	openArchive(ARCHIVE_SDMC);
-	ptmuInit();
-	mcuInit();
-	amInit(); 
-	amAppInit();
-	psInit();
-	aptInit();
-	hidInit();
-	actInit(SDK(11, 2, 0, 200), 0x20000);
-	socInit((u32*)memalign(0x1000, 0x10000), 0x10000);
 	
 	gfxInitDefault();
 	gfxSet3D(false);
@@ -481,13 +480,7 @@ void initServices(void)
 	strcpy(kernerlVersion, getVersion(0));
 	strcpy(firmVersion, getVersion(1));
 	strcpy(systemVersion, getVersion(2));
-	strncpy(sdmcCID, getCID(0), 33);
-	strncpy(nandCID, getCID(1), 33);
-	strncpy(username, getUsername(), 15);
-	strncpy(birthday, getBirthday(), 6);
-	strncpy(eulaVer, getEulaVersion(), 6);
-	strncpy(pin, getParentalPin(), 6);
-	strncpy(email, getParentalEmail(), 512);
+	//wcscpy(username, getUsername());
 	
 	sdTitiles = titleCount(MEDIATYPE_SD);
 	nandTitles = titleCount(MEDIATYPE_NAND);
@@ -506,22 +499,23 @@ void termServices(void)
 	romfsExit();
 	gfxExit();
 	
-    socExit();
-	actExit();
-	hidExit();
-	aptExit();
-	psExit();
-	acExit();
-	amExit();
-	httpcExit();
-	mcuExit();
-	ptmuExit();
 	closeArchive();
 	sdmcExit();
 	fsExit();
+	
+	socExit();
+	ptmuExit();
+	psExit();	
+	mcuExit();
+	hidExit();
+	dspExit();
 	cfgsExit();
 	cfguExit();
-	dspExit();
+	aptExit();
+	amExit();
+	actExit();
+	acExit();
+	acCloseServiceHandle();
 }
 
 int	touchButton(touchPosition *touch, int selection)
@@ -575,7 +569,7 @@ int main(int argc, char **argv)
 		screen_select(GFX_TOP);
 		screen_draw_texture(TEXTURE_TOP_SCREEN_BG, 0, 0);
 		screen_draw_texture(TEXTURE_ICON, ((400.0 - screen_get_texture_width(TEXTURE_ICON)) / 2.0), 36);
-		screen_draw_string(5, 2, 0.41f, 0.41f, COLOUR_MAINMENU_HIGHLIGHT, "3DSident v0.7.6");
+		screen_draw_string(5, 2, 0.41f, 0.41f, COLOUR_MAINMENU_HIGHLIGHT, "3DSident v0.7.7");
 		
 		if (selection == 1)
 			kernelMenu();
