@@ -27,14 +27,14 @@
 
 #define TEXTURE_BOTTOM_SCREEN_BG 	0
 #define TEXTURE_TOP_SCREEN_BG 		1
-#define TEXTURE_ICON 				2
+#define TEXTURE_ICON 			2
 #define TEXTURE_DRIVE_ICON 		3
 
-#define COLOUR_MAINMENU 			RGBA8(78, 74, 67, 255)
+#define COLOUR_MAINMENU 		RGBA8(78, 74, 67, 255)
 #define COLOUR_MAINMENU_HIGHLIGHT 	RGBA8(250, 237, 227, 255)
-#define COLOUR_MENU 				RGBA8(0, 0, 0, 255)
+#define COLOUR_MENU 			RGBA8(0, 0, 0, 255)
 #define COLOUR_SUBJECT 			RGBA8(120, 118, 115, 255)
-#define COLOUR_VALUE 				RGBA8(67, 72, 66, 255)
+#define COLOUR_VALUE 			RGBA8(67, 72, 66, 255)
 
 char kernerlVersion[100], systemVersion[100], firmVersion[100];
 static u32 sdTitiles = 0, nandTitles = 0;
@@ -522,7 +522,7 @@ void termServices(void)
 	acCloseServiceHandle();
 }
 
-int	touchButton(touchPosition *touch, int selection)
+int touchButton(touchPosition *touch, int selection)
 {
 	if (touch->px >= 15 && touch->px <= 300 && touch->py >= 37 && touch->py <= 56)
 		selection = 1;
