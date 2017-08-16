@@ -18,7 +18,6 @@ Result MCU_ReadRegister(u8 reg, u32 size, void * data)
 	u32 * cmdbuf = getThreadCommandBuffer();
 	
 	cmdbuf[0] = IPC_MakeHeader(0x01, 2, 2); // 0x00010082
-	cmdbuf[0] = 0x10082;
 	cmdbuf[1] = reg;
 	cmdbuf[2] = size;
 	cmdbuf[3] = size << 4 | 0xC;
@@ -36,7 +35,6 @@ Result MCU_GetInfoRegisters(u32 size, void * data)
 	u32 * cmdbuf = getThreadCommandBuffer();
 	
 	cmdbuf[0] = IPC_MakeHeader(0x03, 1, 2); // 0x00030042
-	cmdbuf[0] = 0x10082;
 	cmdbuf[1] = size;
 	cmdbuf[2] = size << 4 | 0xC;
 	cmdbuf[3] = (u32)data;
