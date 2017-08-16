@@ -25,16 +25,16 @@
 
 #define SDK(a, b, c, d) ((a<<24) | (b<<16) | (c<<8) | d)
 
-#define TEXTURE_BOTTOM_SCREEN_BG	0
-#define TEXTURE_TOP_SCREEN_BG		1
-#define TEXTURE_ICON				2
-#define TEXTURE_DRIVE_ICON			3
+#define TEXTURE_BOTTOM_SCREEN_BG 	0
+#define TEXTURE_TOP_SCREEN_BG 		1
+#define TEXTURE_ICON 				2
+#define TEXTURE_DRIVE_ICON 		3
 
-#define COLOUR_MAINMENU				RGBA8(78, 74, 67, 255)
-#define COLOUR_MAINMENU_HIGHLIGHT	RGBA8(250, 237, 227, 255)
-#define COLOUR_MENU					RGBA8(0, 0, 0, 255)
-#define COLOUR_SUBJECT				RGBA8(120, 118, 115, 255)
-#define COLOUR_VALUE				RGBA8(67, 72, 66, 255)
+#define COLOUR_MAINMENU 			RGBA8(78, 74, 67, 255)
+#define COLOUR_MAINMENU_HIGHLIGHT 	RGBA8(250, 237, 227, 255)
+#define COLOUR_MENU 				RGBA8(0, 0, 0, 255)
+#define COLOUR_SUBJECT 			RGBA8(120, 118, 115, 255)
+#define COLOUR_VALUE 				RGBA8(67, 72, 66, 255)
 
 char kernerlVersion[100], systemVersion[100], firmVersion[100];
 static u32 sdTitiles = 0, nandTitles = 0;
@@ -441,6 +441,10 @@ void miscMenu(void)
 	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "IP:");
 	width = screen_get_string_width("IP:", 0.41f, 0.41f);
 	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%lu.%lu.%lu.%lu", ip & 0xFF, (ip>>8)&0xFF, (ip>>16)&0xFF, (ip>>24)&0xFF);
+	
+	screen_draw_string(20, 184, 0.41f, 0.41f, COLOUR_SUBJECT, "Device cert:");
+	width = screen_get_string_width("Device cert:", 0.41f, 0.41f);
+	screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%s", getDeviceCert());
 }
 
 void initServices(void)
@@ -476,11 +480,11 @@ void initServices(void)
 	if (isN3DS())
 		osSetSpeedupEnable(true);
 	
-	// Simply because I don't want the following constantly being checked for in a while loop.
+	// Having these in a while loop results in a huge drop in FPS
+	
 	strcpy(kernerlVersion, getVersion(0));
 	strcpy(firmVersion, getVersion(1));
 	strcpy(systemVersion, getVersion(2));
-	//wcscpy(username, getUsername());
 	
 	sdTitiles = titleCount(MEDIATYPE_SD);
 	nandTitles = titleCount(MEDIATYPE_NAND);

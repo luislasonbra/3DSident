@@ -1,5 +1,6 @@
-#include "actu.h"
-#include "am.h"
+#include <stdio.h>
+#include <string.h>
+
 #include "cfgs.h"
 #include "system.h"
 #include "utils.h"
@@ -97,7 +98,7 @@ const char * getLang(void)
 
 	u8 language;
 	
-    if (R_SUCCEEDED(CFGU_GetSystemLanguage(&language)))
+	if (R_SUCCEEDED(CFGU_GetSystemLanguage(&language)))
 	{
 		if (language < 12)
 			return languages[language];
@@ -196,14 +197,4 @@ u64 getSoapId(void)
 		return (id | (((u64) 4) << 32));
 	
 	return 0;
-}
-
-char * getDeviceCert(void)
-{
-	u8 const cert[0x180];
-	
-	if (R_SUCCEEDED(amNetGetDeviceCert(cert)))
-		return base64Encode(cert, 0x180);
-	
-	return NULL;
 }

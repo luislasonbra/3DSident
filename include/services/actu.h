@@ -2,9 +2,6 @@
 #define ACTU_H
 
 #include <3ds.h>
-#include <malloc.h>
-#include <stdio.h>
-#include <string.h>
 
 struct Birthday
 {

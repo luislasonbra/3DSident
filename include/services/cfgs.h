@@ -3,9 +3,8 @@
 
 #include <3ds.h>
 
-Result cfgsInit();
-Result cfgsExit();
-Result CFG_GetConfig(u32 size, u32 blkID, u8* outData);
+Result cfgsInit(void);
+Result cfgsExit(void);
 Result cfgsSecureInfoGetSerialNo(char *serial);
 
 #endif

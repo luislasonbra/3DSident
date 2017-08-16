@@ -2,16 +2,13 @@
 #define CONFIG_H
 
 #include <3ds.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-const char * getUsername(void);
+const wchar_t * getUsername(void);
 char * getBirthday(void);
 char * getEulaVersion(void);
 char * getParentalPin(void);
 char * getParentalEmail(void);
-void getParentalSecretAnswer(u8 * out);
+char * getParentalSecretAnswer(void);
 bool isDebugModeEnabled(void);
 
 #endif

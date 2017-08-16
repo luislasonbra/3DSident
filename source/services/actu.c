@@ -1,3 +1,7 @@
+#include <malloc.h> 
+#include <stdio.h>
+#include <string.h>
+
 #include "actu.h"
 
 static Handle actHandle;
