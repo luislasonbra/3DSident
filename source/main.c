@@ -150,10 +150,10 @@ void NNIDInfoMenu(void)
 	char country[0x3], name[0x16], nnid[0x11], timeZone[0x41];
 	
 	AccountDataBlock accountDataBlock;
-	ACTU_GetAccountDataBlock((u8*)&accountDataBlock, 0xA0, 0x11);
+	Result accountDataBlockRet = ACTU_GetAccountDataBlock((u8*)&accountDataBlock, 0xA0, 0x11);
 	
 	MiiData miiData;
-	ACTU_GetAccountDataBlock((u8*)&miiData, 0x60, 0x7);
+	Result miiDataRet = ACTU_GetAccountDataBlock((u8*)&miiData, 0x60, 0x7);
 
 	width = screen_get_string_width("NNID Menu", 0.41f, 0.41f);
 	screen_draw_string(((400 - width) / 2), 90, 0.41f, 0.41f, COLOUR_MENU, "NNID Menu");
@@ -164,10 +164,13 @@ void NNIDInfoMenu(void)
 	if (R_SUCCEEDED(ACTU_GetAccountDataBlock(nnid, 0x11, 0x8)))
 		screen_draw_stringf((20 + width + 3), 120, 0.41f, 0.41f, COLOUR_VALUE, "%s", nnid);
 
-	u16_to_u8(name, accountDataBlock.miiName, 0x16);
 	screen_draw_string(20, 136, 0.41f, 0.41f, COLOUR_SUBJECT, "Mii name:");
 	width = screen_get_string_width("Mii name:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%s (%u)", name, miiData.miiID);
+	if ((R_SUCCEEDED(accountDataBlockRet)) && (R_SUCCEEDED(miiDataRet)))
+	{
+		u16_to_u8(name, accountDataBlock.miiName, 0x16);
+		screen_draw_stringf((20 + width + 3), 136, 0.41f, 0.41f, COLOUR_VALUE, "%s (%u)", name, miiData.miiID);
+	}
 	
 	screen_draw_string(20, 152, 0.41f, 0.41f, COLOUR_SUBJECT, "Principal ID:");
 	width = screen_get_string_width("Principal ID:", 0.41f, 0.41f);
@@ -176,11 +179,13 @@ void NNIDInfoMenu(void)
 	
 	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "Persistent ID:");
 	width = screen_get_string_width("Persistent ID:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%u", accountDataBlock.persistentID);
+	if (R_SUCCEEDED(accountDataBlockRet))
+		screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%u", accountDataBlock.persistentID);
 	
 	screen_draw_string(20, 184, 0.41f, 0.41f, COLOUR_SUBJECT, "Transferable ID Base:");
 	width = screen_get_string_width("Transferable ID Base:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%llu", accountDataBlock.transferableID);
+	if (R_SUCCEEDED(accountDataBlockRet))
+		screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%llu", accountDataBlock.transferableID);
 	
 	screen_draw_string(20, 200, 0.41f, 0.41f, COLOUR_SUBJECT, "Country:");
 	width = screen_get_string_width("Country:", 0.41f, 0.41f);
@@ -273,8 +278,7 @@ void wifiMenu(void)
 	
 	wifiSlotStructure slotData;
 	
-	Result wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 0, (u8*)&slotData);
-	if ((R_SUCCEEDED(wifiRet)) && (slotData.set))
+	if ((R_SUCCEEDED(CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 0, (u8*)&slotData))) && (slotData.set))
 	{
 		screen_draw_rect(15, 27, 370, 70, RGBA8(180, 180, 178, 255));
 		screen_draw_rect(16, 28, 368, 68, RGBA8(255, 255, 253, 255));
@@ -293,8 +297,7 @@ void wifiMenu(void)
 		screen_draw_stringf(20, 78, 0.41f, 0.41f, COLOUR_VALUE, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
 	}
 	
-	wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 1, (u8*)&slotData);
-	if ((R_SUCCEEDED(wifiRet)) && (slotData.set))
+	if ((R_SUCCEEDED(CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 1, (u8*)&slotData))) && (slotData.set))
 	{
 		screen_draw_rect(15, 95, 370, 70, RGBA8(180, 180, 178, 255));
 		screen_draw_rect(16, 96, 368, 68, RGBA8(255, 255, 253, 255));
@@ -313,8 +316,7 @@ void wifiMenu(void)
 		screen_draw_stringf(20, 146, 0.41f, 0.41f, COLOUR_VALUE, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
 	}
 	
-	wifiRet = CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 2, (u8*)&slotData);
-	if ((R_SUCCEEDED(wifiRet)) && (slotData.set))
+	if ((R_SUCCEEDED(CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 2, (u8*)&slotData))) && (slotData.set))
 	{
 		screen_draw_rect(15, 163, 370, 70, RGBA8(180, 180, 178, 255));
 		screen_draw_rect(16, 164, 368, 68, RGBA8(255, 255, 253, 255));
@@ -441,10 +443,6 @@ void miscMenu(void)
 	screen_draw_string(20, 168, 0.41f, 0.41f, COLOUR_SUBJECT, "IP:");
 	width = screen_get_string_width("IP:", 0.41f, 0.41f);
 	screen_draw_stringf((20 + width + 3), 168, 0.41f, 0.41f, COLOUR_VALUE, "%lu.%lu.%lu.%lu", ip & 0xFF, (ip>>8)&0xFF, (ip>>16)&0xFF, (ip>>24)&0xFF);
-	
-	screen_draw_string(20, 184, 0.41f, 0.41f, COLOUR_SUBJECT, "Device cert:");
-	width = screen_get_string_width("Device cert:", 0.41f, 0.41f);
-	screen_draw_stringf((20 + width + 3), 184, 0.41f, 0.41f, COLOUR_VALUE, "%s", getDeviceCert());
 }
 
 void initServices(void)

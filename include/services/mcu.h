@@ -6,7 +6,6 @@
 Result mcuInit(void);
 Result mcuExit(void);
 Result MCU_ReadRegister(u8 reg, u32 size, void * data);
-Result MCU_GetInfoRegisters(u32 size, void * data);
 Result MCU_GetBatteryVoltage(u8 * out);
 Result MCU_GetBatteryLevel(u8 * out);
 Result MCU_GetSoundVolume(u8 * out);

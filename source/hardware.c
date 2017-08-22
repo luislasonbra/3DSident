@@ -25,7 +25,7 @@ char * getCardSlotStatus(void)
 
 bool detectSD(void)
 {
-    bool isSD;
+	bool isSD = false;
 	
 	if (R_SUCCEEDED(FSUSER_IsSdmcDetected(&isSD)))
 		return isSD;

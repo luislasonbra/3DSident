@@ -20,15 +20,10 @@ void getSizeString(char *string, uint64_t size) //Thanks TheOfficialFloW
 
 bool isN3DS(void)
 {
-	bool isNew3DS = 0;
+	bool isNew3DS = false;
 	
 	if (R_SUCCEEDED(APT_CheckNew3DS(&isNew3DS)))
-	{
-		if (isNew3DS)
-			return true;
-		else
-			return false;
-	}
+		return isNew3DS;
 	
 	return false;
 }
