@@ -56,25 +56,33 @@ const char * getRegion(void)
 
 const char getFirmRegion(void)
 {
-	u8 canadaOrUsa = 0;
-	
-	if (R_SUCCEEDED(CFGU_GetRegionCanadaUSA(&canadaOrUsa)))
-	{
-		if (strncmp(getRegion(), "JPN", 3) == 0)
-			return 'J';
-		else if (canadaOrUsa == 1)
-			return 'U';
-		else if ((strncmp(getRegion(), "EUR", 3) == 0) || (strncmp(getRegion(), "AUS", 3) == 0))
-			return 'E';
-		else if (strncmp(getRegion(), "CHN", 3) == 0)
-			return 'C';
-		else if (strncmp(getRegion(), "KOR", 3) == 0)
-			return 'K';
-		else if (strncmp(getRegion(), "TWN", 3) == 0)
-			return 'T';
-	}
+	if (strncmp(getRegion(), "JPN", 3) == 0)
+		return 'J';
+	else if (strncmp(getRegion(), "USA", 3) == 0)
+		return 'U';
+	else if ((strncmp(getRegion(), "EUR", 3) == 0) || (strncmp(getRegion(), "AUS", 3) == 0))
+		return 'E';
+	else if (strncmp(getRegion(), "CHN", 3) == 0)
+		return 'C';
+	else if (strncmp(getRegion(), "KOR", 3) == 0)
+		return 'K';
+	else if (strncmp(getRegion(), "TWN", 3) == 0)
+		return 'T';
 	
 	return 0;
+}
+
+bool IsCoppacsSupported()
+{
+	u8 IsCoppacs = 0;
+	
+	if (R_SUCCEEDED(CFGU_GetRegionCanadaUSA(&IsCoppacs)))
+	{
+		if (IsCoppacs)
+			return true;
+	}
+	
+	return false;
 }
 
 const char * getLang(void)
@@ -178,15 +186,14 @@ u64 getLocalFriendCodeSeed(void)
 	return 0;
 }
 
-char * getSerialNum(void)
+u8 * getSerialNo(void)
 {
-	static char str[32];
-    char serial[0x10];
+    static u8 serial[0xF];
 	
-    if (R_SUCCEEDED(cfgsSecureInfoGetSerialNo(serial)))
-		strcpy(str, serial);
+    if (R_SUCCEEDED(CFGS_SecureInfoGetSerialNo(serial)))
+		return serial;
     
-	return str;
+	return NULL;
 }
 
 u64 getSoapId(void)

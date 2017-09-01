@@ -10,7 +10,7 @@ const char * getLang(void);
 char * getMacAddress(void);
 char * getScreenType(void);
 u64 getLocalFriendCodeSeed(void);
-char * getSerialNum(void);
+u8 * getSerialNo(void);
 u64 getSoapId(void);
 
 #endif

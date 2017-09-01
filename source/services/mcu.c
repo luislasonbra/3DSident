@@ -20,7 +20,7 @@ Result mcuInit(void)
 
 Result mcuExit(void)
 {
-    return svcCloseHandle(mcuHandle);
+	return svcCloseHandle(mcuHandle);
 }
 
 Result MCU_ReadRegister(u8 reg, u32 size, void * data)

@@ -5,6 +5,6 @@
 
 Result cfgsInit(void);
 Result cfgsExit(void);
-Result cfgsSecureInfoGetSerialNo(char *serial);
+Result CFGS_SecureInfoGetSerialNo(u8 * serial);
 
 #endif

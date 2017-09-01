@@ -12,12 +12,12 @@ Result cfgsExit(void)
     return svcCloseHandle(cfgsHandle);
 }
 
-Result cfgsSecureInfoGetSerialNo(char * serial)
+Result CFGS_SecureInfoGetSerialNo(u8 * serial)
 {
 	Result ret = 0;
-	u32 *cmdbuf = getThreadCommandBuffer();
+	u32 * cmdbuf = getThreadCommandBuffer();
 
-	cmdbuf[0] = IPC_MakeHeader(0x408, 1, 2); // 0x10082
+	cmdbuf[0] = IPC_MakeHeader(0x408, 1, 2); // 0x04080042
 	cmdbuf[1] = 0xF;
 	cmdbuf[2] = 12 | (0xF << 4);
 	cmdbuf[3] = (u32)serial;
@@ -25,5 +25,5 @@ Result cfgsSecureInfoGetSerialNo(char * serial)
 	if (R_FAILED(ret = svcSendSyncRequest(cfgsHandle)))
 		return ret;
 
-	return (Result)cmdbuf[1];
+	return cmdbuf[1];
 }

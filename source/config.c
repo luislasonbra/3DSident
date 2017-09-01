@@ -4,34 +4,42 @@
 #include "config.h"
 #include "utils.h"
 
+struct Birthday
+{
+    s8  month;  // birthday month (1 - 12)
+    s8  day;    // birthday day (1 - 31)
+};
+
 const wchar_t * getUsername(void) 
 {
 	u8 data[0x1C];
-	static wchar_t username[0x1C];
+	static wchar_t userName[0x13];
     
 	if (R_SUCCEEDED(CFGU_GetConfigInfoBlk2(0x1C, 0x000A0000, data)))
 	{
-		for (int i = 0; i < 0x1C; i++)
-			username[i] = (wchar_t)((u16 *)data)[i];
+		for (int i = 0; i < 0x13; i++)
+			userName[i] = (wchar_t)((u16 *)data)[i];
 	}
 	
-	return username;
+	return userName;
 }
 
 char * getBirthday(void) 
 {
-	u16 data = 0;
-	static char birthday[0x8];
+	u8 data[0x2];
+	static char date[0xA];
+
+	struct Birthday birthday;
 	
-	if (R_SUCCEEDED(CFGU_GetConfigInfoBlk2(0x2, 0x000A0001, (u8*)&data)))
+	if (R_SUCCEEDED(CFGU_GetConfigInfoBlk2(0x2, 0x000A0001, data)))
 	{
-		u8 month = data / 256;
-		u8 day = data % 256;
+		birthday.month = data[0x01];
+		birthday.day = data[0x00];
 	
-		snprintf(birthday, 0x8, "%u/%u", day, month);
+		snprintf(date, 0xA, "%02d/%02d", birthday.day, birthday.month);
 	}
 	
-	return birthday;
+	return date;
 }
 
 char * getEulaVersion(void)
