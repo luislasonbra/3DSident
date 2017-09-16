@@ -10,5 +10,6 @@ char * getParentalPin(void);
 char * getParentalEmail(void);
 char * getParentalSecretAnswer(void);
 bool isDebugModeEnabled(void);
+bool isUpdatesEnabled(void);
 
 #endif

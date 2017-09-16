@@ -104,3 +104,14 @@ bool isDebugModeEnabled(void)
 	
 	return false;
 }
+
+bool isUpdatesEnabled(void)
+{
+	u8 data[0x4];
+	bool isEnabled = false;
+    
+	if (R_SUCCEEDED(CFG_GetConfigInfoBlk8(0x4, 0x000F0005, data)))
+		isEnabled = data[0] & 0xFF;
+	
+	return isEnabled;
+}

@@ -79,7 +79,7 @@ char * getNandCid(void)
 	return cid;
 }
 
-u32 getDeviceID(void) // Same as PS_GetDeviceId
+u32 getDeviceId(void) // Same as PS_GetDeviceId
 {
     u32 id = 0;
 	

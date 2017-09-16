@@ -117,12 +117,41 @@ const char * getLang(void)
 
 char * getMacAddress(void)
 {
-	u8 * macByte = (u8 *)0x1FF81060; 
+	u8 * macByte = (u8 *)WIFI_MACADDR; 
 	static char macAddress[18];
 	
 	snprintf(macAddress, 18, "%02X:%02X:%02X:%02X:%02X:%02X", *macByte, *(macByte + 1), *(macByte + 2), *(macByte + 3), *(macByte + 4), *(macByte + 5));
 
 	return macAddress;
+}
+
+char * getRunningHW(void)
+{
+	u8 * data = (u8 *)RUNNING_HW; 
+	static char runningHW[0x9];
+	
+	switch (*data)
+	{
+		case 1:
+			snprintf(runningHW, 0x7, "Retail");
+			break;
+		case 2:
+			snprintf(runningHW, 0x9, "Devboard");
+			break;
+		case 3:
+			snprintf(runningHW, 0x9, "Debugger");
+			break;
+		case 4:
+			snprintf(runningHW, 0x8, "Capture");
+			break;
+	}
+
+	return runningHW;
+}
+
+char * isDebugUnit(void)
+{
+	return *(char *)0x1FF80015 ? "(Debug Unit)" : "";
 }
 
 char * getScreenType(void)
@@ -186,7 +215,7 @@ u64 getLocalFriendCodeSeed(void)
 	return 0;
 }
 
-u8 * getSerialNo(void)
+u8 * getSerialNumber(void)
 {
     static u8 serial[0xF];
 	

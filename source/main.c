@@ -66,7 +66,7 @@ void kernelMenu(void)
 	
 	screen_draw_string(15, 202, 0.44f, 0.44f, COLOUR_SUBJECT, "Device ID:");
 	width = screen_get_string_width("Device ID:", 0.44f, 0.44f);
-	screen_draw_stringf((15 + width + 3), 202, 0.44f, 0.44f, COLOUR_VALUE, "%lu", getDeviceID());
+	screen_draw_stringf((15 + width + 3), 202, 0.44f, 0.44f, COLOUR_VALUE, "%lu", getDeviceId());
 }
 
 void systemMenu(void)
@@ -78,7 +78,7 @@ void systemMenu(void)
 	
 	screen_draw_string(15, 112, 0.44f, 0.44f, COLOUR_SUBJECT, "Model:");
 	width = screen_get_string_width("Model:", 0.44f, 0.44f);
-	screen_draw_stringf((15 + width + 3), 112, 0.44f, 0.44f, COLOUR_VALUE, "%s (%s)", getModel(), getRegion());
+	screen_draw_stringf((15 + width + 3), 112, 0.44f, 0.44f, COLOUR_VALUE, "%s (%s - %s)", getModel(), getRunningHW(), getRegion());
 	
 	screen_draw_string(15, 130, 0.44f, 0.44f, COLOUR_SUBJECT, "Language:");
 	width = screen_get_string_width("Language:", 0.44f, 0.44f);
@@ -98,7 +98,7 @@ void systemMenu(void)
 	
 	screen_draw_string(15, 202, 0.44f, 0.44f, COLOUR_SUBJECT, "Serial number:");
 	width = screen_get_string_width("Serial number:", 0.44f, 0.44f);
-	screen_draw_stringf((15 + width + 3), 202, 0.44f, 0.44f, COLOUR_VALUE, "%s", getSerialNo());
+	screen_draw_stringf((15 + width + 3), 202, 0.44f, 0.44f, COLOUR_VALUE, "%s", getSerialNumber());
 	
 	screen_draw_string(15, 220, 0.44f, 0.44f, COLOUR_SUBJECT, "Screen type:");
 	width = screen_get_string_width("Screen type:", 0.44f, 0.44f);
@@ -227,9 +227,9 @@ void configInfoMenu(void)
 	width = screen_get_string_width("Parental control answer:", 0.44f, 0.44f);
 	screen_draw_stringf((15 + width + 3), 202, 0.44f, 0.44f, COLOUR_VALUE, "%s", (getParentalSecretAnswer() + 1));
 	
-	/*screen_draw_string(15, 220, 0.44f, 0.44f, COLOUR_SUBJECT, "Debug mode:");
-	width = screen_get_string_width("Country:", 0.44f, 0.44f);
-	screen_draw_stringf((15 + width + 3), 220, 0.44f, 0.44f, COLOUR_VALUE, "%s", isDebugModeEnabled()? "enabled" : "disabled");*/
+	screen_draw_string(15, 220, 0.44f, 0.44f, COLOUR_SUBJECT, "Network updates:");
+	width = screen_get_string_width("Network updates:", 0.44f, 0.44f);
+	screen_draw_stringf((15 + width + 3), 220, 0.44f, 0.44f, COLOUR_VALUE, "%s", isUpdatesEnabled()? "enabled" : "disabled");
 }
 
 void hardwareMenu(void)
@@ -254,11 +254,13 @@ void hardwareMenu(void)
 	width = screen_get_string_width("SDMC status:", 0.44f, 0.44f);
 	screen_draw_stringf((15 + width + 3), 148, 0.44f, 0.44f, COLOUR_VALUE, "%s", detectSD()? "detected" : "not detected");
 	
-	double volPercent = (volume * 1.5873015873);
 	screen_draw_string(15, 166, 0.44f, 0.44f, COLOUR_SUBJECT, "Volume slider state:");
 	width = screen_get_string_width("Volume slider state:", 0.44f, 0.44f);
 	if (R_SUCCEEDED(HIDUSER_GetSoundVolume(&volume)))
+	{
+		double volPercent = (volume * 1.5873015873);
 		screen_draw_stringf((15 + width + 3), 166, 0.44f, 0.44f, COLOUR_VALUE, "%d (%.0lf%%)", volume, volPercent);
+	}
 	
 	double _3dSliderPercent = (osGet3DSliderState() * 100.0);
 	screen_draw_string(15, 184, 0.44f, 0.44f, COLOUR_SUBJECT, "3D slider state:");
@@ -461,7 +463,7 @@ void initServices(void)
 	
 	fsInit();
 	sdmcInit();
-	openArchive(ARCHIVE_SDMC);
+	openArchive(&fsArchive, ARCHIVE_SDMC);
 	
 	gfxInitDefault();
 	gfxSet3D(false);
@@ -494,13 +496,13 @@ void termServices(void)
 	screen_unload_texture(TEXTURE_BOTTOM_SCREEN_BG);
 	
 	if (isN3DS())
-		osSetSpeedupEnable(0);
+		osSetSpeedupEnable(false);
 	
 	screen_exit();
 	romfsExit();
 	gfxExit();
 	
-	closeArchive();
+	closeArchive(fsArchive);
 	sdmcExit();
 	fsExit();
 	
@@ -570,7 +572,7 @@ int main(int argc, char **argv)
 		screen_select(GFX_TOP);
 		screen_draw_texture(TEXTURE_TOP_SCREEN_BG, 0, 0);
 		screen_draw_texture(TEXTURE_ICON, ((400.0 - screen_get_texture_width(TEXTURE_ICON)) / 2.0), 31);
-		screen_draw_string(5, 2, 0.48f, 0.48f, COLOUR_MAINMENU_HIGHLIGHT, "3DSident v0.7.7");
+		screen_draw_stringf(5, 2, 0.48f, 0.48f, COLOUR_MAINMENU_HIGHLIGHT, "3DSident v0.7.7 %s", isDebugUnit());
 		
 		if (selection == 1)
 			kernelMenu();
