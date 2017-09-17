@@ -156,8 +156,8 @@ char * isDebugUnit(void)
 
 char * getScreenType(void)
 {	
-	static char uScreenType[20];
-	static char dScreenType[20];
+	static char upperScreen[20];
+	static char lowerScreen[20];
 	
 	static char screenType[32];
 	
@@ -173,31 +173,31 @@ char * getScreenType(void)
         
 		switch ((screens >> 4) & 0xF)
 		{
-			case 1: // 0x01 = JDI => IPS
-				sprintf(uScreenType, "Upper: IPS");
+			case 0x01: // 0x01 = JDI => IPS
+				sprintf(upperScreen, "Upper: IPS");
 				break;
-			case 0xC: // 0x0C = SHARP => TN
-				sprintf(uScreenType, "Upper: TN");
+			case 0x0C: // 0x0C = SHARP => TN
+				sprintf(upperScreen, "Upper: TN");
 				break;
 			default:
-				sprintf(uScreenType, "Upper: Unknown");
+				sprintf(upperScreen, "Upper: Unknown");
 				break;
 		}
 		switch (screens & 0xF)
 		{
-			case 1: // 0x01 = JDI => IPS
-				sprintf(dScreenType, " | Lower: IPS");
+			case 0x01: // 0x01 = JDI => IPS
+				sprintf(lowerScreen, " | Lower: IPS");
 				break;
-			case 0xC: // 0x0C = SHARP => TN
-				sprintf(dScreenType, " | Lower: TN");
+			case 0x0C: // 0x0C = SHARP => TN
+				sprintf(lowerScreen, " | Lower: TN");
 				break;
 			default:
-				sprintf(dScreenType, " | Lower: Unknown");
+				sprintf(lowerScreen, " | Lower: Unknown");
 				break;
 		}
 		
-		strcpy(screenType, uScreenType);
-		strcat(screenType, dScreenType);
+		strcpy(screenType, upperScreen);
+		strcat(screenType, lowerScreen);
 	}
 	else
 		sprintf(screenType, "Upper: TN | Lower: TN"); 
