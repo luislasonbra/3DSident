@@ -36,6 +36,7 @@
 
 char kernerlVersion[100], systemVersion[100], firmVersion[100];
 static u32 sdTitiles = 0, nandTitles = 0;
+static bool isHomebrew = false;
 
 void kernelMenu(void)
 {	
@@ -226,10 +227,11 @@ void configInfoMenu(void)
 	screen_draw_string(15, 202, 0.44f, 0.44f, COLOUR_SUBJECT, "Parental control answer:");
 	width = screen_get_string_width("Parental control answer:", 0.44f, 0.44f);
 	screen_draw_stringf((15 + width + 3), 202, 0.44f, 0.44f, COLOUR_VALUE, "%s", (getParentalSecretAnswer() + 1));
-	
-	screen_draw_string(15, 220, 0.44f, 0.44f, COLOUR_SUBJECT, "Network updates:");
+
+	// This is useless in a retail device.
+	/*screen_draw_string(15, 220, 0.44f, 0.44f, COLOUR_SUBJECT, "Network updates:");
 	width = screen_get_string_width("Network updates:", 0.44f, 0.44f);
-	screen_draw_stringf((15 + width + 3), 220, 0.44f, 0.44f, COLOUR_VALUE, "%s", isUpdatesEnabled()? "enabled" : "disabled");
+	screen_draw_stringf((15 + width + 3), 220, 0.44f, 0.44f, COLOUR_VALUE, "%s", isUpdatesEnabled()? "enabled" : "disabled"); */
 }
 
 void hardwareMenu(void)
@@ -448,7 +450,13 @@ void miscMenu(void)
 void initServices(void)
 {
 	acGetServiceHandle();
+	
+	// A crappy way to check if user is running from *hax.
+	if (envIsHomebrew() && (R_FAILED(actInit())))
+		isHomebrew = envIsHomebrew();
+	
 	actInit();
+	
 	amAppInit();
 	amInit(); 
 	aptInit();
@@ -574,78 +582,78 @@ int main(int argc, char **argv)
 		screen_draw_texture(TEXTURE_ICON, ((400.0 - screen_get_texture_width(TEXTURE_ICON)) / 2.0), 31);
 		screen_draw_stringf(5, 2, 0.48f, 0.48f, COLOUR_MAINMENU_HIGHLIGHT, "3DSident v0.7.7 %s", isDebugUnit());
 		
-		if (selection == 1)
-			kernelMenu();
-		else if (selection == 2)
-			systemMenu();
-		else if (selection == 3)
-			batteryMenu();
-		else if (selection == 4)
-			NNIDInfoMenu();
-		else if (selection == 5)
-			configInfoMenu();
-		else if (selection == 6)
-			hardwareMenu();
-		else if (selection == 7)
-			wifiMenu();
-		else if (selection == 8)
-			storageMenu();
-		else if (selection == 9)
-			miscMenu();
+		
+		switch(selection)
+		{
+			case 1:
+				kernelMenu();
+				break;
+			
+			case 2:
+				systemMenu();
+				break;
+			
+			case 3:
+				batteryMenu();
+				break;
+			
+			case 4:
+				if (!isHomebrew)
+					NNIDInfoMenu();
+				else
+				{
+					u32 width = ((400 - (screen_get_string_width("This service cannot be accessed in *hax.", 0.48f, 0.48f))) / 2);
+					screen_draw_stringf(width, 120, 0.48f, 0.48f, COLOUR_MAINMENU, "%s", isHomebrew? "This service cannot be accessed in *hax." : "");
+				}
+				break;
+			
+			case 5:
+				if (!isHomebrew)
+					configInfoMenu();
+				else
+				{
+					u32 width = ((400 - (screen_get_string_width("This service cannot be accessed in *hax.", 0.48f, 0.48f))) / 2);
+					screen_draw_stringf(width, 120, 0.48f, 0.48f, COLOUR_MAINMENU, "%s", isHomebrew? "This service cannot be accessed in *hax." : "");
+				}
+				break;
+			
+			case 6:
+				hardwareMenu();
+				break;
+			
+			case 7:
+				if (!isHomebrew)
+					wifiMenu();
+				else
+				{
+					u32 width = ((400 - (screen_get_string_width("This service cannot be accessed in *hax.", 0.48f, 0.48f))) / 2);
+					screen_draw_stringf(width, 120, 0.48f, 0.48f, COLOUR_MAINMENU, "%s", isHomebrew? "This service cannot be accessed in *hax." : "");
+				}
+				break;
+			
+			case 8:
+				storageMenu();
+				break;
+			
+			case 9:
+				miscMenu();
+				break;
+		}
 		
 		screen_select(GFX_BOTTOM);
 		screen_draw_texture(TEXTURE_BOTTOM_SCREEN_BG, 0, 0);
 		screen_draw_rect(16, selector_image_y, 286, 18, RGBA8(242, 119, 62, 255));
 		
-		if (selection == 1)
-			screen_draw_string(22, 38, 0.44f, 0.44f, COLOUR_MAINMENU_HIGHLIGHT, "Kernel Information");
-		else 
-			screen_draw_string(22, 38, 0.44f, 0.44f, COLOUR_MAINMENU, "Kernel Information");
-		
-		if (selection == 2)
-			screen_draw_string(22, 56, 0.44f, 0.44f, COLOUR_MAINMENU_HIGHLIGHT, "System Information");
-		else
-			screen_draw_string(22, 56, 0.44f, 0.44f, COLOUR_MAINMENU, "System Information");
-		
-		if (selection == 3)
-			screen_draw_string(22, 74, 0.44f, 0.44f, COLOUR_MAINMENU_HIGHLIGHT, "Battery Information");
-		else
-			screen_draw_string(22, 74, 0.44f, 0.44f, COLOUR_MAINMENU, "Battery Information");
-		
-		if (selection == 4)
-			screen_draw_string(22, 92, 0.44f, 0.44f, COLOUR_MAINMENU_HIGHLIGHT, "NNID Information");
-		else
-			screen_draw_string(22, 92, 0.44f, 0.44f, COLOUR_MAINMENU, "NNID Information");
-		
-		if (selection == 5)
-			screen_draw_string(22, 110, 0.44f, 0.44f, COLOUR_MAINMENU_HIGHLIGHT, "Config Information");
-		else
-			screen_draw_string(22, 110, 0.44f, 0.44f, COLOUR_MAINMENU, "Config Information");
-		
-		if (selection == 6)
-			screen_draw_string(22, 128, 0.44f, 0.44f, COLOUR_MAINMENU_HIGHLIGHT, "Hardware Information");
-		else
-			screen_draw_string(22, 128, 0.44f, 0.44f, COLOUR_MAINMENU, "Hardware Information");
-		
-		if (selection == 7)
-			screen_draw_string(22, 146, 0.44f, 0.44f, COLOUR_MAINMENU_HIGHLIGHT, "WiFi Information");
-		else
-			screen_draw_string(22, 146, 0.44f, 0.44f, COLOUR_MAINMENU, "WiFi Information");
-		
-		if (selection == 8)
-			screen_draw_string(22, 164, 0.44f, 0.44f, COLOUR_MAINMENU_HIGHLIGHT, "Storage Information");
-		else
-			screen_draw_string(22, 164, 0.44f, 0.44f, COLOUR_MAINMENU, "Storage Information");
-		
-		if (selection == 9)
-			screen_draw_string(22, 182, 0.44f, 0.44f, COLOUR_MAINMENU_HIGHLIGHT, "Miscellaneous");
-		else
-			screen_draw_string(22, 182, 0.44f, 0.44f, COLOUR_MAINMENU, "Miscellaneous");
-		
-		if (selection == 10)
-			screen_draw_string(22, 200, 0.44f, 0.44f, COLOUR_MAINMENU_HIGHLIGHT, "Exit");
-		else
-			screen_draw_string(22, 200, 0.44f, 0.44f, COLOUR_MAINMENU, "Exit");
+		screen_draw_string(22, 38, 0.44f, 0.44f, selection == 1? COLOUR_MAINMENU_HIGHLIGHT : COLOUR_MAINMENU, "Kernel Information");
+		screen_draw_string(22, 56, 0.44f, 0.44f, selection == 2? COLOUR_MAINMENU_HIGHLIGHT : COLOUR_MAINMENU, "System Information");
+		screen_draw_string(22, 74, 0.44f, 0.44f, selection == 3? COLOUR_MAINMENU_HIGHLIGHT : COLOUR_MAINMENU, "Battery Information");
+		screen_draw_string(22, 92, 0.44f, 0.44f, selection == 4? COLOUR_MAINMENU_HIGHLIGHT : COLOUR_MAINMENU, "NNID Information");
+		screen_draw_string(22, 110, 0.44f, 0.44f, selection == 5? COLOUR_MAINMENU_HIGHLIGHT : COLOUR_MAINMENU, "Config Information");
+		screen_draw_string(22, 128, 0.44f, 0.44f, selection == 6? COLOUR_MAINMENU_HIGHLIGHT : COLOUR_MAINMENU, "Hardware Information");
+		screen_draw_string(22, 146, 0.44f, 0.44f, selection == 7? COLOUR_MAINMENU_HIGHLIGHT : COLOUR_MAINMENU, "WiFi Information");
+		screen_draw_string(22, 164, 0.44f, 0.44f, selection == 8? COLOUR_MAINMENU_HIGHLIGHT : COLOUR_MAINMENU, "Storage Information");
+		screen_draw_string(22, 182, 0.44f, 0.44f, selection == 9? COLOUR_MAINMENU_HIGHLIGHT : COLOUR_MAINMENU, "Miscellaneous");
+		screen_draw_string(22, 200, 0.44f, 0.44f, selection == 10? COLOUR_MAINMENU_HIGHLIGHT : COLOUR_MAINMENU, "Exit");
 		
 		screen_end_frame();
 		
