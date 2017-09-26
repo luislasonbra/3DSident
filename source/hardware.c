@@ -7,19 +7,19 @@ char * getCardSlotStatus(void)
 	bool isInserted = false;
 	FS_CardType cardType = 0;
 	
-	static char card[20];
+	static char card[0x14];
 	
 	if (R_SUCCEEDED(FSUSER_CardSlotIsInserted(&isInserted)))
 	{
 		if (isInserted)
 		{
 			FSUSER_GetCardType(&cardType);
-			snprintf(card, 20, "inserted %s", cardType? "(TWL)" : "(CTR)");
+			snprintf(card, 0x14, "inserted %s", cardType? "(TWL)" : "(CTR)");
 			return card;
 		}
 	}
 	
-	snprintf(card, 20, "not inserted");
+	snprintf(card, 0x14, "not inserted");
 	return card;
 }
 
@@ -36,7 +36,7 @@ bool detectSD(void)
 char * getBrightness(u32 screen)
 {
 	u32 brightness = 0;
-	static char level[5];
+	static char level[0xD];
 	
 	if(R_SUCCEEDED(gspLcdInit()))
 	{
@@ -44,7 +44,7 @@ char * getBrightness(u32 screen)
 			gspLcdExit();
 	}
 	
-	snprintf(level, 5, "%d%%", (int)brightness);
+	snprintf(level, 0xD, "%.0lf%%", (((double)brightness / (double)142.0) * (double)100.0));
 	
 	return level;
 }

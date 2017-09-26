@@ -53,6 +53,23 @@ char * getEulaVersion(void)
 	return version;
 }
 
+char * getSoundOutputMode(void)
+{
+	u8 data[0x1];
+	
+	static char * mode[] = 
+	{
+		"mono",
+		"stereo",
+		"surround"
+	};
+    
+	if (R_SUCCEEDED(CFGU_GetConfigInfoBlk2(0x1, 0x00070001, data)))
+		return mode[data[0x0]];
+	
+	return NULL;
+}
+
 char * getParentalPin(void)
 {	
 	u8 data[0x94];
@@ -111,6 +128,23 @@ bool isUpdatesEnabled(void)
 	bool isEnabled = false;
     
 	if (R_SUCCEEDED(CFG_GetConfigInfoBlk8(0x4, 0x000F0005, data)))
+		isEnabled = data[0] & 0xFF;
+	
+	return isEnabled;
+}
+
+/*
+	u8 data[0x2];
+	data[0x0] -> u8 ABL_powersave_enable
+	data[0x1] -> u8 brightness_level
+*/
+
+bool isPowerSaveEnabled(void)
+{
+	u8 data[0x2];
+	bool isEnabled = false;
+    
+	if (R_SUCCEEDED(CFG_GetConfigInfoBlk8(0x2, 0x00050001, data)))
 		isEnabled = data[0] & 0xFF;
 	
 	return isEnabled;
