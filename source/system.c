@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "cfgs.h"
+#include "kernel.h"
 #include "system.h"
 #include "utils.h"
 
@@ -118,40 +119,29 @@ const char * getLang(void)
 char * getMacAddress(void)
 {
 	u8 * macByte = (u8 *)WIFI_MACADDR; 
-	static char macAddress[18];
+	static char macAddress[0x12];
 	
-	snprintf(macAddress, 18, "%02X:%02X:%02X:%02X:%02X:%02X", *macByte, *(macByte + 1), *(macByte + 2), *(macByte + 3), *(macByte + 4), *(macByte + 5));
+	snprintf(macAddress, 0x12, "%02X:%02X:%02X:%02X:%02X:%02X", *macByte, *(macByte + 0x1), *(macByte + 0x2), *(macByte + 0x3), *(macByte + 0x4), *(macByte + 0x5));
 
 	return macAddress;
 }
 
 char * getRunningHW(void)
 {
-	u8 * data = (u8 *)RUNNING_HW; 
-	static char runningHW[0x9];
-	
-	switch (*data)
+	static char * runningHW[] = 
 	{
-		case 0x1:
-			snprintf(runningHW, 0x7, "Retail");
-			break;
-		case 0x2:
-			snprintf(runningHW, 0x9, "Devboard");
-			break;
-		case 0x3:
-			snprintf(runningHW, 0x9, "Debugger");
-			break;
-		case 0x4:
-			snprintf(runningHW, 0x8, "Capture");
-			break;
-	}
+		"Retail",
+		"Devboard",
+		"Debugger",
+		"Capture"
+	};
 
-	return runningHW;
+	return runningHW[(*(u8 *)RUNNING_HW) - 0x1];
 }
 
 char * isDebugUnit(void)
 {
-	return *(char *)0x1FF80015 ? "(Debug Unit)" : "";
+	return *(u8 *)UNITINFO ? "" : "(Debug Unit)";
 }
 
 char * getScreenType(void)

@@ -582,7 +582,6 @@ int main(int argc, char **argv)
 		screen_draw_texture(TEXTURE_ICON, ((400.0 - screen_get_texture_width(TEXTURE_ICON)) / 2.0), 31);
 		screen_draw_stringf(5, 2, 0.48f, 0.48f, COLOUR_MAINMENU_HIGHLIGHT, "3DSident v0.7.7 %s", isDebugUnit());
 		
-		
 		switch(selection)
 		{
 			case 1:
