@@ -149,3 +149,14 @@ bool isPowerSaveEnabled(void)
 	
 	return isEnabled;
 }
+
+bool isAutoBrightnessEnabled(void)
+{
+	u8 data[0x8];
+	bool isEnabled = false;
+    
+	if (R_SUCCEEDED(CFG_GetConfigInfoBlk8(0x8, 0x00050009, data)))
+		isEnabled = data[0x4] & 0xFF;
+	
+	return isEnabled;
+}

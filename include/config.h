@@ -13,5 +13,6 @@ char * getParentalSecretAnswer(void);
 bool isDebugModeEnabled(void);
 bool isUpdatesEnabled(void);
 bool isPowerSaveEnabled(void);
+bool isAutoBrightnessEnabled(void);
 
 #endif

@@ -140,6 +140,10 @@ void batteryMenu(void)
 	width = screen_get_string_width("MCU firmware:", 0.44f, 0.44f);
 	if ((R_SUCCEEDED(MCU_GetFwVerHigh(&fwVerHigh))) && (R_SUCCEEDED(MCU_GetFwVerLow(&fwVerLow))))
 		screen_draw_stringf((15 + width + 3), 184, 0.44f, 0.44f, COLOUR_VALUE, "%u.%u", (fwVerHigh - 0x10), fwVerLow);
+	
+	screen_draw_string(15, 202, 0.44f, 0.44f, COLOUR_SUBJECT, "Power-saving mode:");
+	width = screen_get_string_width("Power-saving mode:", 0.44f, 0.44f);
+	screen_draw_stringf((15 + width + 3), 202, 0.44f, 0.44f, COLOUR_VALUE, "%s", isPowerSaveEnabled()? "enabled" : "disabled");
 }
 
 void NNIDInfoMenu(void)
@@ -271,7 +275,7 @@ void hardwareMenu(void)
 
 	screen_draw_string(15, 202, 0.44f, 0.44f, COLOUR_SUBJECT, "Brightness:");
 	width = screen_get_string_width("Brightness:", 0.44f, 0.44f);
-	screen_draw_stringf((15 + width + 3), 202, 0.44f, 0.44f, COLOUR_VALUE, "%s (power-saving mode %s)", getBrightness(1), isPowerSaveEnabled()? "enabled" : "disabled");
+	screen_draw_stringf((15 + width + 3), 202, 0.44f, 0.44f, COLOUR_VALUE, "%s (auto-brightness mode %s)", getBrightness(1), isAutoBrightnessEnabled()? "enabled" : "disabled");
 	
 	screen_draw_string(15, 220, 0.44f, 0.44f, COLOUR_SUBJECT, "Sound output:");
 	width = screen_get_string_width("Sound output:", 0.44f, 0.44f);
