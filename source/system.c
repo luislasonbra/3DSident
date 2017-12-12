@@ -199,7 +199,7 @@ u64 getLocalFriendCodeSeed(void)
 {
 	u64 seed = 0;
 	
-    if (R_SUCCEEDED(PS_GetLocalFriendCodeSeed(&seed)))
+    if (R_SUCCEEDED(CFGI_GetLocalFriendCodeSeed(&seed)))
 		return seed;
 	
 	return 0;
