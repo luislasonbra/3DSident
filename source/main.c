@@ -4,7 +4,6 @@
 #include "ac.h"
 #include "actu.h"
 #include "am.h"
-#include "cfgs.h"
 #include "config.h"
 #include "fs.h"
 #include "hardware.h"
@@ -17,7 +16,6 @@
 #include "storage.h"
 #include "system.h"
 #include "utils.h"
-#include "wifi.h"
 
 #define selector_xDistance 0
 #define selector_yDistance 18
@@ -287,65 +285,50 @@ void hardwareMenu(void)
 
 void wifiMenu(void)
 {
+	char ssid[0x20], passphrase[0x40];
+
 	screen_draw_rect(0, 19, 400, 221, RGBA8(242, 241, 239, 255));
 	
-	wifiSlotStructure slotData;
-	
-	if ((R_SUCCEEDED(CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 0, (u8*)&slotData))) && (slotData.set))
+	if (R_SUCCEEDED(ACI_LoadWiFiSlot(0)))
 	{
 		screen_draw_rect(15, 27, 370, 70, RGBA8(180, 180, 178, 255));
 		screen_draw_rect(16, 28, 368, 68, RGBA8(255, 255, 253, 255));
 		
 		screen_draw_string(20, 30, 0.44f, 0.44f, COLOUR_SUBJECT, "WiFi Slot 1:");
-		if (slotData.network.use) 
-		{
-			screen_draw_stringf(20, 46, 0.44f, 0.44f, COLOUR_VALUE, "SSID: %s", slotData.network.SSID);
-			screen_draw_stringf(20, 62, 0.44f, 0.44f, COLOUR_VALUE, "Pass: %s (%s)", slotData.network.passphrase, getSecurityMode());
-		}
-		else if (slotData.network_WPS.use) 
-		{
-			screen_draw_stringf(20, 46, 0.44f, 0.44f, COLOUR_VALUE, "SSID: %s", slotData.network_WPS.SSID);
-			screen_draw_stringf(20, 62, 0.44f, 0.44f, COLOUR_VALUE, "Pass: (%s)", getSecurityMode());
-		}
-		screen_draw_stringf(20, 78, 0.44f, 0.44f, COLOUR_VALUE, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
+
+		if (R_SUCCEEDED(ACI_GetSSID(ssid)))
+			screen_draw_stringf(20, 46, 0.44f, 0.44f, COLOUR_VALUE, "SSID: %s", ssid);
+		
+		if (R_SUCCEEDED(ACI_GetPassphrase(passphrase)))
+			screen_draw_stringf(20, 62, 0.44f, 0.44f, COLOUR_VALUE, "Pass: %s (%s)", passphrase, getSecurityMode());
 	}
 	
-	if ((R_SUCCEEDED(CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 1, (u8*)&slotData))) && (slotData.set))
+	if (R_SUCCEEDED(ACI_LoadWiFiSlot(1)))
 	{
 		screen_draw_rect(15, 95, 370, 70, RGBA8(180, 180, 178, 255));
 		screen_draw_rect(16, 96, 368, 68, RGBA8(255, 255, 253, 255));
 		
 		screen_draw_string(20, 98, 0.44f, 0.44f, COLOUR_SUBJECT, "WiFi Slot 2:");
-		if (slotData.network.use) 
-		{
-			screen_draw_stringf(20, 114, 0.44f, 0.44f, COLOUR_VALUE, "SSID: %s", slotData.network.SSID);
-			screen_draw_stringf(20, 130, 0.44f, 0.44f, COLOUR_VALUE, "Pass: %s (%s)", slotData.network.passphrase, getSecurityMode());
-		}
-		else if (slotData.network_WPS.use) 
-		{
-			screen_draw_stringf(20, 114, 0.44f, 0.44f, COLOUR_VALUE, "SSID: %s", slotData.network_WPS.SSID);
-			screen_draw_stringf(20, 130, 0.44f, 0.44f, COLOUR_VALUE, "Pass: (%s)", getSecurityMode());
-		}
-		screen_draw_stringf(20, 146, 0.44f, 0.44f, COLOUR_VALUE, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
+
+		if (R_SUCCEEDED(ACI_GetSSID(ssid)))
+			screen_draw_stringf(20, 114, 0.44f, 0.44f, COLOUR_VALUE, "SSID: %s", ssid);
+		
+		if (R_SUCCEEDED(ACI_GetPassphrase(passphrase)))
+			screen_draw_stringf(20, 130, 0.44f, 0.44f, COLOUR_VALUE, "Pass: %s (%s)", passphrase, getSecurityMode());
 	}
 	
-	if ((R_SUCCEEDED(CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 2, (u8*)&slotData))) && (slotData.set))
+	if (R_SUCCEEDED(ACI_LoadWiFiSlot(2)))
 	{
 		screen_draw_rect(15, 163, 370, 70, RGBA8(180, 180, 178, 255));
 		screen_draw_rect(16, 164, 368, 68, RGBA8(255, 255, 253, 255));
 		
 		screen_draw_string(20, 166, 0.44f, 0.44f, COLOUR_SUBJECT, "WiFi Slot 3:");
-		if (slotData.network.use) 
-		{
-			screen_draw_stringf(20, 182, 0.44f, 0.44f, COLOUR_VALUE, "SSID: %s", slotData.network.SSID);
-			screen_draw_stringf(20, 198, 0.44f, 0.44f, COLOUR_VALUE, "Pass: %s (%s)", slotData.network.passphrase, getSecurityMode());
-		}
-		else if (slotData.network_WPS.use) 
-		{
-			screen_draw_stringf(20, 182, 0.44f, 0.44f, COLOUR_VALUE, "SSID: %s", slotData.network_WPS.SSID);
-			screen_draw_stringf(20, 198, 0.44f, 0.44f, COLOUR_VALUE, "Pass: (%s)", getSecurityMode());
-		}
-		screen_draw_stringf(20, 214, 0.44f, 0.44f, COLOUR_VALUE, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
+
+		if (R_SUCCEEDED(ACI_GetSSID(ssid)))
+			screen_draw_stringf(20, 182, 0.44f, 0.44f, COLOUR_VALUE, "SSID: %s", ssid);
+		
+		if (R_SUCCEEDED(ACI_GetPassphrase(passphrase)))
+			screen_draw_stringf(20, 198, 0.44f, 0.44f, COLOUR_VALUE, "Pass: %s (%s)", passphrase, getSecurityMode());
 	}
 }
 
@@ -460,7 +443,7 @@ void miscMenu(void)
 
 void initServices(void)
 {
-	acGetServiceHandle();
+	aciInit();
 	
 	// A crappy way to check if user is running from *hax.
 	if (envIsHomebrew() && (R_FAILED(actInit())))
@@ -472,11 +455,9 @@ void initServices(void)
 	amInit(); 
 	aptInit();
 	cfguInit();
-	cfgsInit();
 	dspInit();
 	hidInit();
 	mcuInit();
-	psInit();
 	ptmuInit();
 	socInit((u32*)memalign(0x1000, 0x10000), 0x10000);
 	
@@ -527,17 +508,15 @@ void termServices(void)
 	
 	socExit();
 	ptmuExit();
-	psExit();	
 	mcuExit();
 	hidExit();
 	dspExit();
-	cfgsExit();
 	cfguExit();
 	aptExit();
 	amExit();
 	actExit();
 	acExit();
-	acCloseServiceHandle();
+	aciExit();
 }
 
 int touchButton(touchPosition *touch, int selection)

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "cfgs.h"
+#include "ac.h"
 #include "kernel.h"
 #include "system.h"
 #include "utils.h"
@@ -209,7 +209,7 @@ u8 * getSerialNumber(void)
 {
     static u8 serial[0xF];
 	
-    if (R_SUCCEEDED(CFGS_SecureInfoGetSerialNo(serial)))
+    if (R_SUCCEEDED(CFGI_SecureInfoGetSerialNumber(serial)))
 		return serial;
     
 	return NULL;
@@ -223,4 +223,27 @@ u64 getSoapId(void)
 		return (id | (((u64) 4) << 32));
 	
 	return 0;
+}
+
+char * getSecurityMode()
+{
+	u8 securityMode = 0;
+    
+	if (R_FAILED(ACI_GetSecurityMode(&securityMode)))
+		securityMode = 8;
+    
+	static char * securityString[] = 
+	{
+		"Not secured",
+		"WEP 40-bit",
+		"WEP 104-bit",
+		"WEP 128-bit",
+		"WPA TKIP",
+		"WPA2 TKIP",
+		"WPA AES",
+		"WPA2 AES",
+		"Unknown"
+	};
+    
+	return securityString[securityMode];
 }
