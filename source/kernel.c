@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "fs.h"
 #include "kernel.h"
 #include "system.h"
+#include "utils.h"
 
 char * getInitalVersion(void)
 {
