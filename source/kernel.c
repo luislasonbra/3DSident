@@ -5,6 +5,47 @@
 #include "kernel.h"
 #include "system.h"
 
+char * getInitalVersion(void)
+{
+	static char initialVer[0xA];
+	
+	openArchive(&fsArchive, ARCHIVE_NAND_TWL_FS);
+	
+	Handle handle;
+	
+	if (R_FAILED(FSUSER_OpenFileDirectly(&handle, ARCHIVE_NAND_TWL_FS, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, "/sys/log/product.log"), FS_OPEN_READ, 0)))
+		return NULL;
+	
+	u64 size64 = 0;
+	u32 size = 0;
+	
+	if (R_FAILED(FSFILE_GetSize(handle, &size64)))
+		return NULL;
+		
+	size = (u32)size64;
+	
+	char * buf = (char *)malloc(size + 1);
+	u32 bytesread = 0;
+	
+	if (R_FAILED(FSFILE_Read(handle, &bytesread, 0, (u32 *)buf, size)))
+		return NULL;
+	
+	buf[size] = '\0';
+	
+	strcpy(initialVer, extract_between(buf, "cup:", " preInstall:"));
+	strcat(initialVer, "-");
+	strcat(initialVer, extract_between(buf, "nup:", " cup:"));
+	
+	if (R_FAILED(FSFILE_Close(handle)))
+		return NULL;
+	
+	free(buf);
+	
+	closeArchive(fsArchive);
+	
+	return initialVer;
+}
+
 char * getVersion(int version)
 {
 	char *str_kernel = (char *)malloc(sizeof(char) * 255), *str_ver = (char *)malloc(sizeof(char) * 255), *str_sysver = (char *)malloc(sizeof(char) * 255);
@@ -42,6 +83,8 @@ char * getVersion(int version)
 		return str_kernel;
 	else if (version == 1)
 		return str_ver;
+	else if (version == 2)
+		return getInitalVersion();
 	else 
 		return str_sysver;
 }

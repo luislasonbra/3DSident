@@ -32,7 +32,7 @@
 #define COLOUR_SUBJECT 			RGBA8(120, 118, 115, 255)
 #define COLOUR_VALUE 			RGBA8(67, 72, 66, 255)
 
-char kernerlVersion[100], systemVersion[100], firmVersion[100];
+char kernerlVersion[100], systemVersion[100], firmVersion[100], initialFwVersion[0xA];
 static u32 sdTitiles = 0, nandTitles = 0;
 static bool isHomebrew = false;
 
@@ -55,17 +55,21 @@ void kernelMenu(void)
 	width = screen_get_string_width("System version:", 0.44f, 0.44f);
 	screen_draw_stringf((15 + width + 3), 148, 0.44f, 0.44f, COLOUR_VALUE, "%s", systemVersion);
 	
-	screen_draw_string(15, 166, 0.44f, 0.44f, COLOUR_SUBJECT, "SDMC CID:");
-	width = screen_get_string_width("SDMC CID:", 0.44f, 0.44f);
-	screen_draw_stringf((15 + width + 3), 166, 0.44f, 0.44f, COLOUR_VALUE, "%s", getSdmcCid());
-
-	screen_draw_string(15, 184, 0.44f, 0.44f, COLOUR_SUBJECT, "NAND CID:");
-	width = screen_get_string_width("NAND CID:", 0.44f, 0.44f);
-	screen_draw_stringf((15 + width + 3), 184, 0.44f, 0.44f, COLOUR_VALUE, "%s", getNandCid());
+	screen_draw_string(15, 166, 0.44f, 0.44f, COLOUR_SUBJECT, "Initial system version:");
+	width = screen_get_string_width("Initial system version:", 0.44f, 0.44f);
+	screen_draw_stringf((15 + width + 3), 166, 0.44f, 0.44f, COLOUR_VALUE, "%s", initialVersion);
 	
-	screen_draw_string(15, 202, 0.44f, 0.44f, COLOUR_SUBJECT, "Device ID:");
+	screen_draw_string(15, 184, 0.44f, 0.44f, COLOUR_SUBJECT, "SDMC CID:");
+	width = screen_get_string_width("SDMC CID:", 0.44f, 0.44f);
+	screen_draw_stringf((15 + width + 3), 184, 0.44f, 0.44f, COLOUR_VALUE, "%s", getSdmcCid());
+
+	screen_draw_string(15, 202, 0.44f, 0.44f, COLOUR_SUBJECT, "NAND CID:");
+	width = screen_get_string_width("NAND CID:", 0.44f, 0.44f);
+	screen_draw_stringf((15 + width + 3), 202, 0.44f, 0.44f, COLOUR_VALUE, "%s", getNandCid());
+	
+	screen_draw_string(15, 220, 0.44f, 0.44f, COLOUR_SUBJECT, "Device ID:");
 	width = screen_get_string_width("Device ID:", 0.44f, 0.44f);
-	screen_draw_stringf((15 + width + 3), 202, 0.44f, 0.44f, COLOUR_VALUE, "%lu", getDeviceId());
+	screen_draw_stringf((15 + width + 3), 220, 0.44f, 0.44f, COLOUR_VALUE, "%lu", getDeviceId());
 }
 
 void systemMenu(void)
@@ -482,7 +486,8 @@ void initServices(void)
 	
 	strcpy(kernerlVersion, getVersion(0));
 	strcpy(firmVersion, getVersion(1));
-	strcpy(systemVersion, getVersion(2));
+	strcpy(initialVersion, getVersion(2));
+	strcpy(systemVersion, getVersion(3));
 	
 	sdTitiles = titleCount(MEDIATYPE_SD);
 	nandTitles = titleCount(MEDIATYPE_NAND);
