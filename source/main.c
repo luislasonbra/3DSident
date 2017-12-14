@@ -684,7 +684,12 @@ int main(int argc, char **argv)
 			captureScreenshot();
 
 		if (kDown & KEY_SELECT)
-			displayInfo = false;
+		{
+			if (displayInfo)
+				displayInfo = false;
+			else 
+				displayInfo = true;
+		}
 	}
 
 	termServices();

@@ -48,7 +48,6 @@ ICON_FLAGS  := nosavebackups,visible
 # CIA
 APP_PRODUCT_CODE    := CTR-G-3DSI
 APP_UNIQUE_ID       := 0x16100
-APP_ROMFS_DIR       := $(TOPDIR)/romfs
 RSF_FILE            := resources/cia.rsf
 
 #---------------------------------------------------------------------------------
