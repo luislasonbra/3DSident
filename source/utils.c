@@ -38,6 +38,25 @@ void u16_to_u8(char * buf, const u16 * input, size_t bufsize)
 	buf[units] = 0;
 }
 
+char * extract_between(char * string, char * str1, char * str2) // Basically finds a string between two othe strings :D
+{
+	static char str[1024];
+	char *begin, *end, *crawl;
+	int i = 0;
+	
+	begin = strstr(string, str1);
+	begin+=strlen(str1);
+	
+	end = strstr(string, str2);	
+	
+	for(crawl = begin; crawl < end; crawl++)
+		str[i++] = *crawl;
+		
+	str[i] = '\0'; //add '\0' to the array so that it's a string!
+	
+	return str;
+}
+
 // Crashes doesn't work. Leavign it here for anyone who's interested.
 // Also, this is Rei's function (initially in C++, in working condition) not mine.
 static const char * base64_chars = 
