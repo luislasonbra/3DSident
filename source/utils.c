@@ -38,23 +38,32 @@ void u16_to_u8(char * buf, const u16 * input, size_t bufsize)
 	buf[units] = 0;
 }
 
-char * extract_between(char * string, char * str1, char * str2) // Basically finds a string between two othe strings :D
+char * extract_between(const char *string, const char *str1, const char *str2)
 {
-	static char str[1024];
-	char *begin, *end, *crawl;
-	int i = 0;
+	const char *i1 = strstr(string, str1);
 	
-	begin = strstr(string, str1);
-	begin+=strlen(str1);
-	
-	end = strstr(string, str2);	
-	
-	for(crawl = begin; crawl < end; crawl++)
-		str[i++] = *crawl;
-		
-	str[i] = '\0'; //add '\0' to the array so that it's a string!
-	
-	return str;
+	if (i1 != NULL)
+	{
+    
+    	const size_t pl1 = strlen(str1);
+    	const char *i2 = strstr(i1 + pl1, str2);
+    
+    	if (str2 != NULL)
+    	{
+     		/* Found both markers, extract text. */
+     		const size_t mlen = i2 - (i1 + pl1);
+     		char *ret = malloc(mlen + 1);
+     		
+     		if (ret != NULL)
+     		{
+       			memcpy(ret, i1 + pl1, mlen);
+       			ret[mlen] = '\0';
+       			return ret;
+     		}
+    	}
+    }
+  	
+  	return "";
 }
 
 // Crashes doesn't work. Leavign it here for anyone who's interested.

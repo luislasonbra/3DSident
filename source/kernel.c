@@ -9,7 +9,7 @@
 
 char * getInitalVersion(void)
 {
-	static char initialVer[0xA];
+	static char initialVer[0xB];
 	
 	openArchive(&fsArchive, ARCHIVE_NAND_TWL_FS);
 	
@@ -34,7 +34,12 @@ char * getInitalVersion(void)
 	
 	buf[size] = '\0';
 	
+	// New 3DS/2DS only
 	strcpy(initialVer, extract_between(buf, "cup:", " preInstall:"));
+
+	if (strlen(initialVer) == 0)
+		strcpy(initialVer, extract_between(buf, "cup:", ","));
+
 	strcat(initialVer, "-");
 	strcat(initialVer, extract_between(buf, "nup:", " cup:"));
 	
