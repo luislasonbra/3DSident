@@ -12,6 +12,17 @@ u32 titleCount(FS_MediaType mediaType)
     return 0;
 }
 
+u32 ticketCount(void)
+{
+	u32 count = 0;
+	
+	if (R_SUCCEEDED(AM_GetTicketCount(&count)))
+		return count;
+
+    return 0;
+}
+
+
 char * getDeviceCert(void)
 {
 	u8 const cert[0x180];

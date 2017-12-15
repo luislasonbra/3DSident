@@ -33,7 +33,7 @@
 #define COLOUR_VALUE 			RGBA8(67, 72, 66, 255)
 
 char kernerlVersion[100], systemVersion[100], firmVersion[100], initialVersion[0xA];
-static u32 sdTitiles = 0, nandTitles = 0;
+static u32 sdTitiles = 0, nandTitles = 0, tickets = 0;
 static bool isHomebrew = false, displayInfo = true;
 
 void kernelMenu(void)
@@ -282,8 +282,8 @@ void hardwareMenu(void)
 	
 	if (isN3DS())
 	{
-		screen_draw_string(15, 220, 0.44f, 0.44f, COLOUR_SUBJECT, "Brightness:");
-		width = screen_get_string_width("Brightness:", 0.44f, 0.44f);
+		screen_draw_string(15, 220, 0.44f, 0.44f, COLOUR_SUBJECT, "Brightness level:");
+		width = screen_get_string_width("Brightness level:", 0.44f, 0.44f);
 		screen_draw_stringf((15 + width + 3), 220, 0.44f, 0.44f, COLOUR_VALUE, "%s (auto-brightness mode %s)", getBrightness(1), isAutoBrightnessEnabled()? "enabled" : "disabled");
 	}
 }
@@ -430,24 +430,28 @@ void miscMenu(void)
 	screen_draw_string(15, 112, 0.44f, 0.44f, COLOUR_SUBJECT, "Installed titles:");
 	width = screen_get_string_width("Installed titles:", 0.44f, 0.44f);
 	screen_draw_stringf((15 + width + 3), 112, 0.44f, 0.44f, COLOUR_VALUE, "SD: %lu (NAND: %lu)", sdTitiles, nandTitles);
+
+	screen_draw_string(15, 130, 0.44f, 0.44f, COLOUR_SUBJECT, "Installed tickets:");
+	width = screen_get_string_width("Installed tickets:", 0.44f, 0.44f);
+	screen_draw_stringf((15 + width + 3), 130, 0.44f, 0.44f, COLOUR_VALUE, "%lu", tickets);
 	
-	screen_draw_string(15, 130, 0.44f, 0.44f, COLOUR_SUBJECT, "Homemenu ID:");
+	screen_draw_string(15, 148, 0.44f, 0.44f, COLOUR_SUBJECT, "Homemenu ID:");
 	width = screen_get_string_width("Homemenu ID:", 0.44f, 0.44f);
 	if (R_SUCCEEDED(APT_GetAppletInfo(APPID_HOMEMENU, &homemenuID, NULL, NULL, NULL, NULL)))
-		screen_draw_stringf((15 + width + 3), 130, 0.44f, 0.44f, COLOUR_VALUE, "%016llX", homemenuID);
+		screen_draw_stringf((15 + width + 3), 148, 0.44f, 0.44f, COLOUR_VALUE, "%016llX", homemenuID);
 	
-	screen_draw_string(15, 148, 0.44f, 0.44f, COLOUR_SUBJECT, "WiFi signal strength:");
+	screen_draw_string(15, 166, 0.44f, 0.44f, COLOUR_SUBJECT, "WiFi signal strength:");
 	width = screen_get_string_width("WiFi signal strength:", 0.44f, 0.44f);
-	screen_draw_stringf((15 + width + 3), 148, 0.44f, 0.44f, COLOUR_VALUE, "%d (%.0lf%%)", osGetWifiStrength(), wifiPercent);
+	screen_draw_stringf((15 + width + 3), 166, 0.44f, 0.44f, COLOUR_VALUE, "%d (%.0lf%%)", osGetWifiStrength(), wifiPercent);
 	
 	u32 ip = gethostid();
-	screen_draw_string(15, 166, 0.44f, 0.44f, COLOUR_SUBJECT, "IP:");
+	screen_draw_string(15, 184, 0.44f, 0.44f, COLOUR_SUBJECT, "IP:");
 	width = screen_get_string_width("IP:", 0.44f, 0.44f);
 
 	if (displayInfo)
-		screen_draw_stringf((15 + width + 3), 166, 0.44f, 0.44f, COLOUR_VALUE, "%lu.%lu.%lu.%lu", ip & 0xFF, (ip>>8)&0xFF, (ip>>16)&0xFF, (ip>>24)&0xFF);
+		screen_draw_stringf((15 + width + 3), 184, 0.44f, 0.44f, COLOUR_VALUE, "%lu.%lu.%lu.%lu", ip & 0xFF, (ip>>8)&0xFF, (ip>>16)&0xFF, (ip>>24)&0xFF);
 	else
-		screen_draw_stringf((15 + width + 3), 166, 0.44f, 0.44f, COLOUR_VALUE, "%s", NULL);
+		screen_draw_stringf((15 + width + 3), 184, 0.44f, 0.44f, COLOUR_VALUE, "%s", NULL);
 }
 
 void initServices(void)
@@ -496,6 +500,7 @@ void initServices(void)
 	
 	sdTitiles = titleCount(MEDIATYPE_SD);
 	nandTitles = titleCount(MEDIATYPE_NAND);
+	tickets = ticketCount();
 }
 
 void termServices(void)
@@ -636,6 +641,10 @@ int main(int argc, char **argv)
 			
 			case 9:
 				miscMenu();
+				break;
+			case 10:
+				screen_draw_string(((400 - screen_get_string_width("Press select to hide user-specific info", 0.48f, 0.48f)) / 2), 112, 
+					0.48f, 0.48f, COLOUR_SUBJECT, "Press select to hide user-specific info");
 				break;
 		}
 		

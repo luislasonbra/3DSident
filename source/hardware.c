@@ -36,7 +36,7 @@ bool detectSD(void)
 char * getBrightness(u32 screen)
 {
 	u32 brightness = 0;
-	static char level[0xD];
+	static char level[5];
 	
 	if(R_SUCCEEDED(gspLcdInit()))
 	{
@@ -44,7 +44,7 @@ char * getBrightness(u32 screen)
 			gspLcdExit();
 	}
 	
-	snprintf(level, 0xD, "%.0lf%%", (((double)brightness / (double)142.0) * (double)100.0));
+	snprintf(level, 0x4, "%d", (int)brightness);
 	
 	return level;
 }
