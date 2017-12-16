@@ -44,7 +44,6 @@ char * extract_between(const char *string, const char *str1, const char *str2)
 	
 	if (i1 != NULL)
 	{
-    
     	const size_t pl1 = strlen(str1);
     	const char *i2 = strstr(i1 + pl1, str2);
     
@@ -61,8 +60,8 @@ char * extract_between(const char *string, const char *str1, const char *str2)
        			return ret;
      		}
     	}
-    }
-  	
+   	}
+
   	return "";
 }
 
