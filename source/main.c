@@ -286,6 +286,12 @@ void hardwareMenu(void)
 		width = screen_get_string_width("Brightness level:", 0.44f, 0.44f);
 		screen_draw_stringf((15 + width + 3), 220, 0.44f, 0.44f, COLOUR_VALUE, "%s (auto-brightness mode %s)", getBrightness(GSPLCD_SCREEN_TOP), isAutoBrightnessEnabled()? "enabled" : "disabled");
 	}
+	else
+	{
+		screen_draw_string(15, 220, 0.44f, 0.44f, COLOUR_SUBJECT, "Brightness level:");
+		width = screen_get_string_width("Brightness level:", 0.44f, 0.44f);
+		screen_draw_stringf((15 + width + 3), 220, 0.44f, 0.44f, COLOUR_VALUE, "%s", getBrightness(GSPLCD_SCREEN_TOP));
+	}
 }
 
 void wifiMenu(void)
@@ -585,7 +591,7 @@ int main(int argc, char **argv)
 		screen_select(GFX_TOP);
 		screen_draw_texture(TEXTURE_TOP_SCREEN_BG, 0, 0);
 		screen_draw_texture(TEXTURE_ICON, ((400.0 - screen_get_texture_width(TEXTURE_ICON)) / 2.0), 31);
-		screen_draw_stringf(5, 2, 0.48f, 0.48f, COLOUR_MAINMENU_HIGHLIGHT, "3DSident v0.7.8 %s", displayInfo? "" : "(public mode)");
+		screen_draw_stringf(5, 2, 0.48f, 0.48f, COLOUR_MAINMENU_HIGHLIGHT, "3DSident v0.7.9 %s", displayInfo? "" : "(public mode)");
 		
 		switch(selection)
 		{
