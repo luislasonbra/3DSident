@@ -284,7 +284,7 @@ void hardwareMenu(void)
 	{
 		screen_draw_string(15, 220, 0.44f, 0.44f, COLOUR_SUBJECT, "Brightness level:");
 		width = screen_get_string_width("Brightness level:", 0.44f, 0.44f);
-		screen_draw_stringf((15 + width + 3), 220, 0.44f, 0.44f, COLOUR_VALUE, "%s (auto-brightness mode %s)", getBrightness(1), isAutoBrightnessEnabled()? "enabled" : "disabled");
+		screen_draw_stringf((15 + width + 3), 220, 0.44f, 0.44f, COLOUR_VALUE, "%s (auto-brightness mode %s)", getBrightness(GSPLCD_SCREEN_TOP), isAutoBrightnessEnabled()? "enabled" : "disabled");
 	}
 }
 

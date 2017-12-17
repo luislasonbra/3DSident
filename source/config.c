@@ -105,6 +105,9 @@ char * getParentalSecretAnswer(void)
 	
 	if (R_SUCCEEDED(CFG_GetConfigInfoBlk8(0x94, 0x00100001, data)))
 		u16_to_u8(out, (u16 *)(data + 0x10), 0x21); // 0x21 cause the secret answer can only be 32 characters long.
+
+	if (strncmp(out, "", 0x1) == 0) // Null parental controls secret answer
+		return "(null)";
 	
 	return out;
 }
