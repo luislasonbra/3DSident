@@ -16,6 +16,7 @@
 #include "storage.h"
 #include "system.h"
 #include "utils.h"
+#include "wifi.h"
 
 #define selector_xDistance 0
 #define selector_yDistance 18
@@ -297,6 +298,7 @@ void hardwareMenu(void)
 void wifiMenu(void)
 {
 	char ssid[0x20], passphrase[0x40];
+	wifiSlotStructure slotData;
 
 	screen_draw_rect(0, 19, 400, 221, RGBA8(242, 241, 239, 255));
 	
@@ -312,6 +314,9 @@ void wifiMenu(void)
 		
 		if (R_SUCCEEDED(ACI_GetPassphrase(passphrase)))
 			screen_draw_stringf(20, 62, 0.44f, 0.44f, COLOUR_VALUE, "Pass: %s (%s)", displayInfo? passphrase : NULL, getSecurityMode());
+
+		if ((R_SUCCEEDED(CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 0, (u8*)&slotData))) && (slotData.set))
+			screen_draw_stringf(20, 78, 0.44f, 0.44f, COLOUR_VALUE, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
 	}
 	
 	if (R_SUCCEEDED(ACI_LoadWiFiSlot(1)))
@@ -326,6 +331,9 @@ void wifiMenu(void)
 		
 		if (R_SUCCEEDED(ACI_GetPassphrase(passphrase)))
 			screen_draw_stringf(20, 130, 0.44f, 0.44f, COLOUR_VALUE, "Pass: %s (%s)", displayInfo? passphrase : NULL, getSecurityMode());
+
+		if ((R_SUCCEEDED(CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 1, (u8*)&slotData))) && (slotData.set))
+			screen_draw_stringf(20, 146, 0.44f, 0.44f, COLOUR_VALUE, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
 	}
 	
 	if (R_SUCCEEDED(ACI_LoadWiFiSlot(2)))
@@ -340,6 +348,9 @@ void wifiMenu(void)
 		
 		if (R_SUCCEEDED(ACI_GetPassphrase(passphrase)))
 			screen_draw_stringf(20, 198, 0.44f, 0.44f, COLOUR_VALUE, "Pass: %s (%s)", displayInfo? passphrase : NULL, getSecurityMode());
+
+		if ((R_SUCCEEDED(CFG_GetConfigInfoBlk8(CFG_WIFI_SLOT_SIZE, CFG_WIFI_BLKID + 2, (u8*)&slotData))) && (slotData.set))
+			screen_draw_stringf(20, 214, 0.44f, 0.44f, COLOUR_VALUE, "Mac address: %02X:%02X:%02X:%02X:%02X:%02X", slotData.mac_addr[0], slotData.mac_addr[1], slotData.mac_addr[2], slotData.mac_addr[3], slotData.mac_addr[4], slotData.mac_addr[5]);
 	}
 }
 
