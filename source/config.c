@@ -109,7 +109,7 @@ char * getParentalSecretAnswer(void)
 	if (strncmp(out, "", 0x1) == 0) // Null parental controls secret answer
 		return "(null)";
 	
-	return out;
+	return out + 1;
 }
 
 bool isDebugModeEnabled(void)

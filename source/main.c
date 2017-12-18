@@ -228,18 +228,13 @@ void configInfoMenu(void)
 	width = screen_get_string_width("Parental control pin:", 0.44f, 0.44f);
 	screen_draw_stringf((15 + width + 3), 166, 0.44f, 0.44f, COLOUR_VALUE, "%s", displayInfo? getParentalPin() : NULL);
 	
-	screen_draw_string(15, 184, 0.44f, 0.44f, COLOUR_SUBJECT, "Parental control email:");
-	width = screen_get_string_width("Parental control email:", 0.44f, 0.44f);
+	screen_draw_string(15, 184, 0.44f, 0.44f, COLOUR_SUBJECT, "Parental control e-mail:");
+	width = screen_get_string_width("Parental control e-mail:", 0.44f, 0.44f);
 	screen_draw_stringf((15 + width + 3), 184, 0.44f, 0.44f, COLOUR_VALUE, "%s", displayInfo? getParentalEmail() : NULL);
 	
 	screen_draw_string(15, 202, 0.44f, 0.44f, COLOUR_SUBJECT, "Parental control answer:");
 	width = screen_get_string_width("Parental control answer:", 0.44f, 0.44f);
-	screen_draw_stringf((15 + width + 3), 202, 0.44f, 0.44f, COLOUR_VALUE, "%s", displayInfo? (getParentalSecretAnswer() + 1) : NULL);
-
-	// This is useless in a retail device.
-	/*screen_draw_string(15, 220, 0.44f, 0.44f, COLOUR_SUBJECT, "Network updates:");
-	width = screen_get_string_width("Network updates:", 0.44f, 0.44f);
-	screen_draw_stringf((15 + width + 3), 220, 0.44f, 0.44f, COLOUR_VALUE, "%s", isUpdatesEnabled()? "enabled" : "disabled"); */
+	screen_draw_stringf((15 + width + 3), 202, 0.44f, 0.44f, COLOUR_VALUE, "%s", displayInfo? getParentalSecretAnswer() : NULL);
 }
 
 void hardwareMenu(void)
